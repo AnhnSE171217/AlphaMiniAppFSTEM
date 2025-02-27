@@ -8,18 +8,19 @@ class AnimatedFeatureCard extends StatefulWidget {
   final VoidCallback onTap;
 
   const AnimatedFeatureCard({
-    Key? key,
+    super.key,
     required this.title,
     required this.icon,
     required this.color,
     required this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   State<AnimatedFeatureCard> createState() => _AnimatedFeatureCardState();
 }
 
-class _AnimatedFeatureCardState extends State<AnimatedFeatureCard> with SingleTickerProviderStateMixin {
+class _AnimatedFeatureCardState extends State<AnimatedFeatureCard>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
   bool _isPressed = false;
@@ -31,9 +32,10 @@ class _AnimatedFeatureCardState extends State<AnimatedFeatureCard> with SingleTi
       vsync: this,
       duration: const Duration(milliseconds: 150),
     );
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.95).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.95,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
   }
 
   @override
@@ -92,9 +94,8 @@ class _AnimatedFeatureCardState extends State<AnimatedFeatureCard> with SingleTi
                   BoxShadow(
                     color: widget.color.withAlpha(_isPressed ? 30 : 51),
                     blurRadius: _isPressed ? 5 : 8,
-                    offset: _isPressed 
-                      ? const Offset(0, 2)
-                      : const Offset(0, 4),
+                    offset:
+                        _isPressed ? const Offset(0, 2) : const Offset(0, 4),
                   ),
                 ],
               ),

@@ -39,6 +39,7 @@ dependencies:
   webview_flutter: ^4.10.0
   record: ^5.2.1
   path_provider: ^2.0.10    # Để lưu file trong bộ nhớ của thiết bị
+  speech_to_text: ^7.0.0
 
 
 

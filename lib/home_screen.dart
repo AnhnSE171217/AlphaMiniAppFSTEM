@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutterdemo0/speech_to_text_screen.dart';
 import 'action_screen.dart';
 import 'animated_feature_card.dart';
 import 'button_control_screen.dart';
@@ -137,6 +138,16 @@ class _HomeScreenState extends State<HomeScreen> {
       context,
       CustomPageRoute(
         page: FaceControlScreen(webSocketService: widget.webSocketService),
+      ),
+    );
+  }
+
+  void _goToSpeechToTextScreen(BuildContext context) {
+    widget.webSocketService.sendMessage("Face");
+    Navigator.push(
+      context,
+      CustomPageRoute(
+        page: SpeechToTextScreen(webSocketService: widget.webSocketService),
       ),
     );
   }
@@ -343,7 +354,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         title: 'Voice',
                         icon: Icons.mic,
                         color: Colors.red,
-                        onTap: () => _goToActionScreen(context),
+                        onTap: () => _goToSpeechToTextScreen(context),
                       ),
                       _buildFeatureCard(
                         title: 'Button Control',
