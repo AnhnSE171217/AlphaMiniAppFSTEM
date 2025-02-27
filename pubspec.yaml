@@ -33,11 +33,11 @@ dependencies:
 
   flutter_blue_plus: ^1.15.0
   cupertino_icons: ^1.0.8
-  web_socket_channel: ^2.1.0
-  logger: ^1.0.0
+  web_socket_channel: ^3.0.2
+  logger: ^2.5.0
   permission_handler: ^11.4.0
   webview_flutter: ^4.10.0
-  record: ^4.0.0
+  record: ^5.2.1
   path_provider: ^2.0.10    # Để lưu file trong bộ nhớ của thiết bị
 
 

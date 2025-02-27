@@ -7,12 +7,12 @@ import Foundation
 
 import flutter_blue_plus_darwin
 import path_provider_foundation
-import record_macos
+import record_darwin
 import webview_flutter_wkwebview
 
 func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {
   FlutterBluePlusPlugin.register(with: registry.registrar(forPlugin: "FlutterBluePlusPlugin"))
   PathProviderPlugin.register(with: registry.registrar(forPlugin: "PathProviderPlugin"))
-  RecordMacosPlugin.register(with: registry.registrar(forPlugin: "RecordMacosPlugin"))
+  RecordPlugin.register(with: registry.registrar(forPlugin: "RecordPlugin"))
   WebViewFlutterPlugin.register(with: registry.registrar(forPlugin: "WebViewFlutterPlugin"))
 }

@@ -6,43 +6,39 @@ plugins {
 }
 
 android {
-    namespace = "com.example.flutterdemo0" // Đảm bảo namespace được khai báo
+    namespace = "com.example.flutter_application_1"
     compileSdk = flutter.compileSdkVersion
-
-    // Đặt phiên bản NDK chính xác
-    ndkVersion = "27.0.12077973"  // Sử dụng phiên bản NDK yêu cầu cho flutter_blue
+    ndkVersion = "27.0.12077973"
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_11.toString()
+        jvmTarget = JavaVersion.VERSION_17.toString()
     }
 
     defaultConfig {
-        applicationId = "com.example.flutterdemo0"  // ID ứng dụng Android
-        minSdk = flutter.minSdkVersion
+        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
+        applicationId = "com.example.flutter_application_1"
+        // You can update the following values to match your application needs.
+        // For more information, see: https://flutter.dev/to/review-gradle-config.
+        minSdk = 23
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
-        
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = true  // Sửa từ minifyEnabled thành isMinifyEnabled
-            isShrinkResources = true  // Sửa từ shrinkResources thành isShrinkResources
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),  // Đổi cú pháp
-                "proguard-rules.pro"
-            )
+            // TODO: Add your own signing config for the release build.
+            // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")
         }
     }
 }
 
 flutter {
-    source = "../.."  // Đường dẫn đến thư mục Flutter
+    source = "../.."
 }

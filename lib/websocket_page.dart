@@ -31,14 +31,14 @@ class WebSocketPageState extends State<WebSocketPage> {
   }
 
   // Function to send a message to WebSocket
-  void sendMessage(String message) {
-    if (channel != null && channel.sink != null) {
-      logger.i("Sending message: $message");
-      channel.sink.add(message); // Gửi tin nhắn nếu kết nối hợp lệ
-    } else {
-      logger.e("Kết nối WebSocket chưa được thiết lập. Không thể gửi tin nhắn.");
-    }
-  }
+  // void sendMessage(String message) {
+  //   if (channel != null && channel.sink != null) {
+  //     logger.i("Sending message: $message");
+  //     channel.sink.add(message); // Gửi tin nhắn nếu kết nối hợp lệ
+  //   } else {
+  //     logger.e("Kết nối WebSocket chưa được thiết lập. Không thể gửi tin nhắn.");
+  //   }
+  // }
 
   @override
   void dispose() {

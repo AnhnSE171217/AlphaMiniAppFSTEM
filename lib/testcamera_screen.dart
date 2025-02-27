@@ -5,13 +5,16 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 class TestCameraScreen extends StatefulWidget {
+  const TestCameraScreen({super.key});
+
   @override
   _TestCameraScreenState createState() => _TestCameraScreenState();
 }
 
 class _TestCameraScreenState extends State<TestCameraScreen> {
-  final WebSocketChannel channel =
-  WebSocketChannel.connect(Uri.parse('ws://192.169.137.40:8765'));
+  final WebSocketChannel channel = WebSocketChannel.connect(
+    Uri.parse('ws://192.169.137.40:8765'),
+  );
   Uint8List? _imageBytes;
   late final WebViewController _controller;
 
@@ -20,9 +23,10 @@ class _TestCameraScreenState extends State<TestCameraScreen> {
     super.initState();
 
     // Đảm bảo WebView hoạt động trên Android
-    _controller = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..loadRequest(Uri.parse('http://192.169.137.40:8080'));
+    _controller =
+        WebViewController()
+          ..setJavaScriptMode(JavaScriptMode.unrestricted)
+          ..loadRequest(Uri.parse('http://192.169.137.40:8080'));
 
     channel.stream.listen((message) {
       setState(() {
@@ -40,17 +44,18 @@ class _TestCameraScreenState extends State<TestCameraScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Camera View'),
-      ),
+      appBar: AppBar(title: Text('Camera View')),
       body: Column(
         children: [
-          Expanded(child: WebViewWidget(controller: _controller)), // Hiển thị WebView
+          Expanded(
+            child: WebViewWidget(controller: _controller),
+          ), // Hiển thị WebView
           Expanded(
             child: Center(
-              child: _imageBytes != null
-                  ? Image.memory(_imageBytes!)
-                  : CircularProgressIndicator(),
+              child:
+                  _imageBytes != null
+                      ? Image.memory(_imageBytes!)
+                      : CircularProgressIndicator(),
             ),
           ),
         ],
