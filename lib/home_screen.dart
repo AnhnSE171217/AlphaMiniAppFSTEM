@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutterdemo0/AnimatedFeatureCard';
-import 'package:flutterdemo0/ButtonControlScreen';
-import 'package:flutterdemo0/FaceControlScreen';
 import 'action_screen.dart';
+import 'animated_feature_card.dart';
+import 'button_control_screen.dart';
+import 'face_control_screen.dart';
 import 'motor_screen.dart';
 import 'testcamera_screen.dart';
 import 'dance_screen.dart';
