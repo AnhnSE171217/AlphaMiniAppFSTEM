@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutterdemo0/bluetooth_screen.dart';
 import 'package:flutterdemo0/speech_to_text_screen.dart';
 import 'action_screen.dart';
 import 'animated_feature_card.dart';
@@ -118,6 +119,18 @@ class _HomeScreenState extends State<HomeScreen> {
       context,
       CustomPageRoute(
         page: ExpressionScreen(webSocketService: widget.webSocketService),
+      ),
+    );
+  }
+
+  void _goToBluetoothScreen(BuildContext context) {
+    widget.webSocketService.sendMessage("Book");
+    Navigator.push(
+      context,
+      CustomPageRoute(
+        page: BluetoothConnectionPage(
+          webSocketService: widget.webSocketService,
+        ),
       ),
     );
   }
@@ -342,7 +355,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         title: 'Bluetooth',
                         icon: Icons.bluetooth,
                         color: Colors.green,
-                        onTap: () => _goToActionScreen(context),
+                        onTap: () => _goToBluetoothScreen(context),
                       ),
                       _buildFeatureCard(
                         title: 'Test Camera',
