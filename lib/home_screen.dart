@@ -124,19 +124,12 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _goToBluetoothScreen(BuildContext context) {
-    widget.webSocketService.sendMessage("Book");
-    Navigator.push(
-      context,
-      CustomPageRoute(
-        page: BluetoothConnectionPage(
-          webSocketService: widget.webSocketService,
-        ),
-      ),
-    );
+    widget.webSocketService.sendMessage("Bluetooth");
+    Navigator.push(context, CustomPageRoute(page: BluetoothConnectionPage()));
   }
 
   void _goToButtonControlScreen(BuildContext context) {
-    widget.webSocketService.sendMessage("Book");
+    widget.webSocketService.sendMessage("Button");
     Navigator.push(
       context,
       CustomPageRoute(
@@ -156,7 +149,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _goToSpeechToTextScreen(BuildContext context) {
-    widget.webSocketService.sendMessage("Face");
+    widget.webSocketService.sendMessage("Text");
     Navigator.push(
       context,
       CustomPageRoute(
