@@ -40,10 +40,7 @@ class _ButtonControlScreenState extends State<ButtonControlScreen> {
       appBar: AppBar(
         title: const Text(
           'Button Controls',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
         backgroundColor: Colors.deepOrange,
         elevation: 0,
@@ -83,18 +80,15 @@ class _ButtonControlScreenState extends State<ButtonControlScreen> {
                     Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: isProcessing 
-                            ? Colors.amber.shade100 
-                            : Colors.green.shade100,
+                        color:
+                            isProcessing
+                                ? Colors.amber.shade100
+                                : Colors.green.shade100,
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
-                        isProcessing 
-                            ? Icons.autorenew 
-                            : Icons.check_circle,
-                        color: isProcessing 
-                            ? Colors.amber 
-                            : Colors.green,
+                        isProcessing ? Icons.autorenew : Icons.check_circle,
+                        color: isProcessing ? Colors.amber : Colors.green,
                       ),
                     ),
                     const SizedBox(width: 16),
@@ -103,8 +97,8 @@ class _ButtonControlScreenState extends State<ButtonControlScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            isProcessing 
-                                ? "Processing..." 
+                            isProcessing
+                                ? "Processing..."
                                 : "Ready to send commands",
                             style: TextStyle(
                               fontSize: 16,
@@ -137,17 +131,17 @@ class _ButtonControlScreenState extends State<ButtonControlScreen> {
                       // Button 1
                       _buildCommandButton(
                         label: "Command 1",
-                        command: "StartBook",
+                        command: "StartTest",
                         color: Colors.blue,
                         icon: Icons.filter_1,
                       ),
-                      
+
                       const SizedBox(height: 32),
-                      
+
                       // Button 2
                       _buildCommandButton(
                         label: "Command 2",
-                        command: "EndBook",
+                        command: "EndTest",
                         color: Colors.purple,
                         icon: Icons.filter_2,
                       ),
@@ -178,10 +172,7 @@ class _ButtonControlScreenState extends State<ButtonControlScreen> {
           padding: const EdgeInsets.symmetric(vertical: 20),
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [
-                color.withOpacity(0.8),
-                color,
-              ],
+              colors: [color.withOpacity(0.8), color],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -197,11 +188,7 @@ class _ButtonControlScreenState extends State<ButtonControlScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                icon,
-                color: Colors.white,
-                size: 28,
-              ),
+              Icon(icon, color: Colors.white, size: 28),
               const SizedBox(width: 16),
               Text(
                 label,

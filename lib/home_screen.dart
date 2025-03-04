@@ -70,7 +70,7 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       connectionStatus = "Reconnecting to WebSocket...";
     });
-    widget.webSocketService.connect('ws://192.168.1.83:8001/ws');
+    widget.webSocketService.connect('ws://34.143.171.53:8001/ws');
   }
 
   void _goToActionScreen(BuildContext context) {
@@ -124,19 +124,12 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _goToBluetoothScreen(BuildContext context) {
-    widget.webSocketService.sendMessage("Book");
-    Navigator.push(
-      context,
-      CustomPageRoute(
-        page: BluetoothConnectionPage(
-          webSocketService: widget.webSocketService,
-        ),
-      ),
-    );
+    widget.webSocketService.sendMessage("Bluetooth");
+    Navigator.push(context, CustomPageRoute(page: BluetoothConnectionPage()));
   }
 
   void _goToButtonControlScreen(BuildContext context) {
-    widget.webSocketService.sendMessage("Book");
+    widget.webSocketService.sendMessage("Test");
     Navigator.push(
       context,
       CustomPageRoute(
@@ -156,7 +149,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _goToSpeechToTextScreen(BuildContext context) {
-    widget.webSocketService.sendMessage("Face");
+    widget.webSocketService.sendMessage("Voice");
     Navigator.push(
       context,
       CustomPageRoute(

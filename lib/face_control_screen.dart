@@ -13,17 +13,31 @@ class FaceControlScreen extends StatefulWidget {
 class _FaceControlScreenState extends State<FaceControlScreen> {
   String lastCommand = "No command sent yet";
   bool isProcessing = false;
+  final TextEditingController _nameController = TextEditingController();
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
 
   void _sendCommand(String command) {
+    // Nếu là lệnh registerStart, hiển thị dialog để nhập tên
+    if (command == "registerStart") {
+      _showNameInputDialog(context);
+      return;
+    }
+
+    // Xử lý các lệnh khác như bình thường
     setState(() {
       isProcessing = true;
       lastCommand = "Sending: $command";
     });
 
-    // Send the command through WebSocket
+    // Gửi lệnh qua WebSocket
     widget.webSocketService.sendMessage(command);
 
-    // Simulate a response delay
+    // Giả lập độ trễ phản hồi
     Future.delayed(const Duration(milliseconds: 500), () {
       if (mounted) {
         setState(() {
@@ -34,16 +48,93 @@ class _FaceControlScreenState extends State<FaceControlScreen> {
     });
   }
 
+  // Hiển thị dialog nhập tên
+  void _showNameInputDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text(
+            'Đăng ký người dùng',
+            style: TextStyle(
+              color: Colors.deepPurple,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          content: TextField(
+            controller: _nameController,
+            decoration: const InputDecoration(
+              labelText: 'Nhập tên người dùng',
+              border: OutlineInputBorder(),
+              prefixIcon: Icon(Icons.person),
+            ),
+            autofocus: true,
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Hủy'),
+              onPressed: () {
+                _nameController.clear();
+                Navigator.of(context).pop();
+              },
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.deepPurple,
+              ),
+              child: const Text(
+                'Đăng ký',
+                style: TextStyle(color: Colors.white),
+              ),
+              onPressed: () {
+                if (_nameController.text.trim().isNotEmpty) {
+                  // Đóng dialog
+                  Navigator.of(context).pop();
+
+                  // Cập nhật trạng thái
+                  setState(() {
+                    isProcessing = true;
+                    lastCommand =
+                        "Sending: registerStart with name: ${_nameController.text}";
+                  });
+
+                  // Gửi lệnh kèm tên qua WebSocket
+                  widget.webSocketService.sendMessage(
+                    "registerStart:${_nameController.text}",
+                  );
+
+                  // Xóa nội dung text field
+                  _nameController.clear();
+
+                  // Giả lập độ trễ phản hồi
+                  Future.delayed(const Duration(milliseconds: 500), () {
+                    if (mounted) {
+                      setState(() {
+                        isProcessing = false;
+                        lastCommand =
+                            "Đã đăng ký người dùng: ${_nameController.text}";
+                      });
+                    }
+                  });
+                }
+              },
+            ),
+          ],
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
           'Face Detection Controls',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
         backgroundColor: Colors.deepPurple,
         elevation: 0,
@@ -83,18 +174,15 @@ class _FaceControlScreenState extends State<FaceControlScreen> {
                     Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: isProcessing 
-                            ? Colors.amber.shade100 
-                            : Colors.green.shade100,
+                        color:
+                            isProcessing
+                                ? Colors.amber.shade100
+                                : Colors.green.shade100,
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
-                        isProcessing 
-                            ? Icons.autorenew 
-                            : Icons.check_circle,
-                        color: isProcessing 
-                            ? Colors.amber 
-                            : Colors.green,
+                        isProcessing ? Icons.autorenew : Icons.check_circle,
+                        color: isProcessing ? Colors.amber : Colors.green,
                       ),
                     ),
                     const SizedBox(width: 16),
@@ -103,8 +191,8 @@ class _FaceControlScreenState extends State<FaceControlScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            isProcessing 
-                                ? "Processing..." 
+                            isProcessing
+                                ? "Processing..."
                                 : "Ready to send commands",
                             style: TextStyle(
                               fontSize: 16,
@@ -142,7 +230,7 @@ class _FaceControlScreenState extends State<FaceControlScreen> {
                         ),
                       ),
                       const SizedBox(height: 20),
-                      
+
                       // Registration commands
                       _buildCommandButton(
                         label: "Register Start",
@@ -151,7 +239,7 @@ class _FaceControlScreenState extends State<FaceControlScreen> {
                         icon: Icons.person_add,
                       ),
                       const SizedBox(height: 16),
-                      
+
                       _buildCommandButton(
                         label: "Register Stop",
                         command: "registerStop",
@@ -159,7 +247,7 @@ class _FaceControlScreenState extends State<FaceControlScreen> {
                         icon: Icons.person_remove,
                       ),
                       const SizedBox(height: 16),
-                      
+
                       // Detection commands
                       _buildCommandButton(
                         label: "Check Face",
@@ -168,7 +256,7 @@ class _FaceControlScreenState extends State<FaceControlScreen> {
                         icon: Icons.face,
                       ),
                       const SizedBox(height: 16),
-                      
+
                       _buildCommandButton(
                         label: "Face Analyze",
                         command: "faceAnalyze",
@@ -176,7 +264,7 @@ class _FaceControlScreenState extends State<FaceControlScreen> {
                         icon: Icons.analytics,
                       ),
                       const SizedBox(height: 16),
-                      
+
                       _buildCommandButton(
                         label: "Face Detect",
                         command: "faceDetect",
@@ -184,7 +272,7 @@ class _FaceControlScreenState extends State<FaceControlScreen> {
                         icon: Icons.visibility,
                       ),
                       const SizedBox(height: 16),
-                      
+
                       _buildCommandButton(
                         label: "Face Recognize",
                         command: "faceRecogine",
@@ -192,7 +280,7 @@ class _FaceControlScreenState extends State<FaceControlScreen> {
                         icon: Icons.person_search,
                       ),
                       const SizedBox(height: 16),
-                      
+
                       // Tracking commands
                       _buildCommandButton(
                         label: "Face Track",
@@ -201,7 +289,7 @@ class _FaceControlScreenState extends State<FaceControlScreen> {
                         icon: Icons.track_changes,
                       ),
                       const SizedBox(height: 16),
-                      
+
                       _buildCommandButton(
                         label: "Stop Face Track",
                         command: "stopFaceTrack",
@@ -235,10 +323,7 @@ class _FaceControlScreenState extends State<FaceControlScreen> {
           padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [
-                color.withOpacity(0.8),
-                color,
-              ],
+              colors: [color.withOpacity(0.8), color],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -256,11 +341,7 @@ class _FaceControlScreenState extends State<FaceControlScreen> {
             children: [
               Row(
                 children: [
-                  Icon(
-                    icon,
-                    color: Colors.white,
-                    size: 24,
-                  ),
+                  Icon(icon, color: Colors.white, size: 24),
                   const SizedBox(width: 16),
                   Text(
                     label,

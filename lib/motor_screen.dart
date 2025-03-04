@@ -35,7 +35,7 @@ class _MotorScreenState extends State<MotorScreen>
     );
 
     // Send "Dance" message when opening the page
-    widget.webSocketService.sendMessage("Dance");
+    widget.webSocketService.sendMessage("Motor");
 
     // Listen to WebSocketService stream
     widget.webSocketService.messageStream.listen(
