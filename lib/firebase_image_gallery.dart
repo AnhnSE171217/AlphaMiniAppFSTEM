@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
-import 'package:image_gallery_saver/image_gallery_saver.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 
 class FirebaseImageGallery extends StatefulWidget {
   const FirebaseImageGallery({super.key});
@@ -57,6 +58,16 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery> {
     });
 
     try {
+      // Request permissions
+      bool hasPermission = await _requestPermissions();
+      if (!hasPermission) {
+        setState(() {
+          errorMessage = 'Storage permission is required to save images';
+          isDownloading = false;
+        });
+        return;
+      }
+
       // Get the image data
       final response = await http.get(Uri.parse(imageUrl));
 
@@ -64,27 +75,88 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery> {
         // Check if the content is an image
         String? contentType = response.headers['content-type'];
         if (contentType != null && contentType.startsWith('image/')) {
-          // Save to gallery
-          final result = await ImageGallerySaver.saveImage(
-            response.bodyBytes,
-            name: 'firebase_image_${DateTime.now().millisecondsSinceEpoch}',
-          );
+          // Save to Downloads directory (publicly accessible)
+          Directory? targetDir;
+          String locationDescription = "Unknown location";
 
-          // Also save to temp dir for preview
-          Directory tempDir = await getTemporaryDirectory();
-          String fileName =
-              'firebase_image_${DateTime.now().millisecondsSinceEpoch}.jpg';
-          String filePath = '${tempDir.path}/$fileName';
-          File file = File(filePath);
-          await file.writeAsBytes(response.bodyBytes);
+          if (Platform.isAndroid) {
+            // Try multiple locations for Android (especially emulators)
+            final List<String> possiblePaths = [
+              '/storage/emulated/0/Download', // Standard path
+              '/storage/self/primary/Download', // Alternative path
+              '/sdcard/Download', // Legacy path
+            ];
 
-          setState(() {
-            downloadedImagePath = filePath;
-            isDownloading = false;
-          });
+            // Try each path
+            for (String path in possiblePaths) {
+              final dir = Directory(path);
+              if (await dir.exists()) {
+                targetDir = dir;
+                locationDescription = "Downloads folder";
+                break;
+              }
+            }
 
-          // Show success message
-          _showDownloadSuccessDialog("Photos gallery");
+            // If standard Download folders don't exist/work (common in emulators)
+            if (targetDir == null) {
+              // Try external storage directory
+              targetDir = await getExternalStorageDirectory();
+              locationDescription = "External storage";
+
+              // If that fails too, fall back to app documents directory
+              if (targetDir == null) {
+                targetDir = await getApplicationDocumentsDirectory();
+                locationDescription = "App documents folder";
+              }
+            }
+          } else {
+            // On iOS, save to the Documents directory
+            targetDir = await getApplicationDocumentsDirectory();
+            locationDescription = "Documents folder";
+          }
+
+          if (targetDir != null) {
+            String fileName =
+                'firebase_image_${DateTime.now().millisecondsSinceEpoch}.jpg';
+            String filePath = '${targetDir.path}/$fileName';
+
+            // Check if we can write to this directory
+            try {
+              File file = File(filePath);
+              await file.writeAsBytes(response.bodyBytes);
+
+              setState(() {
+                downloadedImagePath = filePath;
+                isDownloading = false;
+              });
+
+              // Show success message with path information
+              _showDownloadSuccessDialog(locationDescription, filePath);
+            } catch (writeError) {
+              // If writing to external storage fails, try app-specific directory
+              final appDir = await getApplicationDocumentsDirectory();
+              final appFilePath = '${appDir.path}/$fileName';
+
+              File appFile = File(appFilePath);
+              await appFile.writeAsBytes(response.bodyBytes);
+
+              setState(() {
+                downloadedImagePath = appFilePath;
+                isDownloading = false;
+              });
+
+              // Show success but indicate it's in app-specific storage
+              _showDownloadSuccessDialog(
+                "App private storage (fallback)",
+                appFilePath,
+              );
+            }
+          } else {
+            setState(() {
+              errorMessage = 'Failed to access any storage directory';
+              isDownloading = false;
+            });
+          }
         } else {
           setState(() {
             errorMessage = 'The URL does not point to an image file';
@@ -105,7 +177,36 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery> {
     }
   }
 
-  void _showDownloadSuccessDialog(String filePath) {
+  Future<bool> _requestPermissions() async {
+    if (Platform.isAndroid) {
+      // For Android 13 and higher
+      if (await _isAndroid13OrHigher()) {
+        var status = await Permission.photos.request();
+        return status.isGranted;
+      }
+      // For older Android versions
+      else {
+        var status = await Permission.storage.request();
+        return status.isGranted;
+      }
+    }
+    // For iOS
+    else {
+      var status = await Permission.photos.request();
+      return status.isGranted;
+    }
+  }
+
+  Future<bool> _isAndroid13OrHigher() async {
+    if (Platform.isAndroid) {
+      DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+      AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+      return androidInfo.version.sdkInt >= 33; // Android 13 is API level 33
+    }
+    return false;
+  }
+
+  void _showDownloadSuccessDialog(String locationDescription, String filePath) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -115,13 +216,20 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('The image has been saved to your device.'),
+              Text('The image has been saved to your $locationDescription.'),
               const SizedBox(height: 16),
-              const Text('File location:'),
+              const Text('File path:'),
               Text(
                 filePath,
                 style: const TextStyle(fontSize: 12, color: Colors.grey),
               ),
+              const SizedBox(height: 8),
+              if (locationDescription.contains("fallback") ||
+                  locationDescription.contains("App"))
+                const Text(
+                  "Note: Image saved to app storage because system storage was unavailable. The image will be removed if the app is uninstalled.",
+                  style: TextStyle(fontSize: 12, color: Colors.orange),
+                ),
             ],
           ),
           actions: [
@@ -253,28 +361,60 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery> {
     }
 
     if (errorMessage.isNotEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline, color: Colors.white, size: 60),
-              const SizedBox(height: 16),
-              Text(
-                errorMessage,
-                style: const TextStyle(color: Colors.white),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: _loadImages,
-                child: const Text('Try Again'),
-              ),
-            ],
+      if (errorMessage.contains('Storage permission')) {
+        return Center(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.error_outline, color: Colors.white, size: 60),
+                const SizedBox(height: 16),
+                Text(
+                  errorMessage,
+                  style: const TextStyle(color: Colors.white),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: _requestPermissions,
+                  child: const Text('Request Permission Again'),
+                ),
+                const SizedBox(height: 12),
+                TextButton(
+                  onPressed: () {
+                    openAppSettings();
+                  },
+                  child: const Text('Open App Settings'),
+                ),
+              ],
+            ),
           ),
-        ),
-      );
+        );
+      } else {
+        return Center(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.error_outline, color: Colors.white, size: 60),
+                const SizedBox(height: 16),
+                Text(
+                  errorMessage,
+                  style: const TextStyle(color: Colors.white),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: _loadImages,
+                  child: const Text('Try Again'),
+                ),
+              ],
+            ),
+          ),
+        );
+      }
     }
 
     if (imageUrls.isEmpty) {
