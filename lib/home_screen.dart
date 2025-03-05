@@ -11,8 +11,7 @@ import 'dance_screen.dart';
 import 'controller_screen.dart';
 import 'expression_screen.dart';
 import 'WebSocketService.dart';
-// ignore: unnecessary_import
-import 'package:flutter/services.dart';
+import 'firebase_image_gallery.dart';
 
 // Add this custom page route class for custom animations
 class CustomPageRoute extends PageRouteBuilder {
@@ -155,6 +154,13 @@ class _HomeScreenState extends State<HomeScreen> {
       CustomPageRoute(
         page: SpeechToTextScreen(webSocketService: widget.webSocketService),
       ),
+    );
+  }
+
+  void _goToImageGallery(BuildContext context) {
+    Navigator.push(
+      context,
+      CustomPageRoute(page: const FirebaseImageGallery()),
     );
   }
 
@@ -373,6 +379,12 @@ class _HomeScreenState extends State<HomeScreen> {
                         icon: Icons.face,
                         color: Colors.pink,
                         onTap: () => _goToFaceControlScreen(context),
+                      ),
+                      _buildFeatureCard(
+                        title: 'Image Gallery',
+                        icon: Icons.image,
+                        color: Colors.amber,
+                        onTap: () => _goToImageGallery(context),
                       ),
                     ],
                   ),
