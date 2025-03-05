@@ -39,9 +39,11 @@ dependencies:
   record: ^5.2.1
   path_provider: ^2.0.10    # Để lưu file trong bộ nhớ của thiết bị
   speech_to_text: ^7.0.0
-  cached_network_image: ^3.3.1
-  http: ^1.1.0
   image_gallery_saver: ^2.0.3
+  cached_network_image: ^3.2.3
+  http: ^1.1.0
+  device_info_plus: ^9.1.0
+
 
 
 dev_dependencies:
