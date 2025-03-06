@@ -160,7 +160,11 @@ class _HomeScreenState extends State<HomeScreen> {
   void _goToImageGallery(BuildContext context) {
     Navigator.push(
       context,
-      CustomPageRoute(page: const FirebaseImageGallery()),
+      MaterialPageRoute(
+        builder:
+            (context) =>
+                FirebaseImageGallery(webSocketService: widget.webSocketService),
+      ),
     );
   }
 

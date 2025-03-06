@@ -5,15 +5,21 @@ import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'websocket_service.dart';
+import 'package:share_plus/share_plus.dart';
 
 class FirebaseImageGallery extends StatefulWidget {
-  const FirebaseImageGallery({super.key});
+  final WebSocketService?
+  webSocketService; // Make nullable for backward compatibility
+
+  const FirebaseImageGallery({super.key, this.webSocketService});
 
   @override
   State<FirebaseImageGallery> createState() => _FirebaseImageGalleryState();
 }
 
-class _FirebaseImageGalleryState extends State<FirebaseImageGallery> {
+class _FirebaseImageGalleryState extends State<FirebaseImageGallery>
+    with SingleTickerProviderStateMixin {
   final String baseUrl =
       'https://storage.googleapis.com/alphamini-a291d.firebasestorage.app/Meo';
   List<String> imageUrls = [];
@@ -22,31 +28,60 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery> {
   bool isDownloading = false;
   String? downloadedImagePath;
 
+  // Add a controller for the refresh button rotation animation
+  late AnimationController _refreshController;
+  bool _isRefreshing = false;
+
   @override
   void initState() {
     super.initState();
+    // Initialize the animation controller
+    _refreshController = AnimationController(
+      duration: const Duration(milliseconds: 1000),
+      vsync: this,
+    );
     _loadImages();
   }
 
+  @override
+  void dispose() {
+    _refreshController.dispose();
+    super.dispose();
+  }
+
+  // Update the loading images method with animation
   Future<void> _loadImages() async {
+    // Start the rotation animation
     setState(() {
       isLoading = true;
       errorMessage = '';
       imageUrls = [];
+      _isRefreshing = true;
     });
 
+    _refreshController.repeat(); // Start continuous rotation
+
     try {
+      // Simulate network delay if loading is too fast for a good UX
+      await Future.delayed(const Duration(milliseconds: 1200));
+
       // Just use the base URL directly
       imageUrls.add(baseUrl);
 
       setState(() {
         isLoading = false;
+        _isRefreshing = false;
       });
+      _refreshController.stop();
+      _refreshController.reset();
     } catch (e) {
       setState(() {
         errorMessage = 'Failed to load images: $e';
         isLoading = false;
+        _isRefreshing = false;
       });
+      _refreshController.stop();
+      _refreshController.reset();
     }
   }
 
@@ -171,6 +206,49 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery> {
     }
   }
 
+  Future<void> _shareImage(String imageUrl) async {
+    setState(() {
+      isDownloading = true; // Reuse the loading state for sharing
+      errorMessage = '';
+    });
+
+    try {
+      // Get the image data
+      final response = await http.get(Uri.parse(imageUrl));
+
+      if (response.statusCode == 200) {
+        // Save to temporary file first
+        final tempDir = await getTemporaryDirectory();
+        final fileName =
+            'firebase_image_share_${DateTime.now().millisecondsSinceEpoch}.jpg';
+        final filePath = '${tempDir.path}/$fileName';
+
+        // Write to temp file
+        File file = File(filePath);
+        await file.writeAsBytes(response.bodyBytes);
+
+        // Share the file
+        await Share.shareXFiles([
+          XFile(filePath),
+        ], text: 'Check out this image from AlphaMini robot!');
+
+        setState(() {
+          isDownloading = false;
+        });
+      } else {
+        setState(() {
+          errorMessage = 'Failed to share: HTTP ${response.statusCode}';
+          isDownloading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        errorMessage = 'Share error: $e';
+        isDownloading = false;
+      });
+    }
+  }
+
   Future<bool> _requestPermissions() async {
     if (Platform.isAndroid) {
       // For Android 13 and higher
@@ -270,6 +348,39 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery> {
     );
   }
 
+  void _sendCameraCommand() {
+    if (widget.webSocketService == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('WebSocket service not available')),
+      );
+      return;
+    }
+
+    widget.webSocketService!.sendMessage("camera");
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Center(
+          // Center the content
+          child: Text(
+            '📸 Photo captured! Tap REFRESH to view it',
+            textAlign: TextAlign.center, // Center the text
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+              letterSpacing:
+                  0.5, // Add slight letter spacing for better readability
+            ),
+          ),
+        ),
+        backgroundColor: Colors.green,
+        duration: Duration(
+          seconds: 2,
+        ), // Extended duration for better visibility
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -280,10 +391,51 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery> {
           'Image Gallery',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
+        // Change back to arrow button for leading
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.of(context).pop(),
+          tooltip: 'Go back',
         ),
+        actions: [
+          // Add refresh button to app bar
+          IconButton(
+            icon: AnimatedBuilder(
+              animation: _refreshController,
+              builder: (context, child) {
+                return Transform.rotate(
+                  angle:
+                      _refreshController.value * 2.0 * 3.14159, // Full rotation
+                  child: Icon(
+                    Icons.refresh,
+                    color: _isRefreshing ? Colors.amber : Colors.white,
+                  ),
+                );
+              },
+            ),
+            onPressed:
+                _isRefreshing ? null : _loadImages, // Prevent multiple presses
+            tooltip: 'Refresh Images',
+          ),
+          // Add share button to app bar FIRST (to match full image view)
+          IconButton(
+            icon: const Icon(Icons.share, color: Colors.white),
+            onPressed:
+                imageUrls.isEmpty || isDownloading
+                    ? null
+                    : () => _shareImage(imageUrls[0]),
+            tooltip: 'Share Image',
+          ),
+          // Add download button to app bar SECOND (to match full image view)
+          IconButton(
+            icon: const Icon(Icons.download, color: Colors.white),
+            onPressed:
+                imageUrls.isEmpty || isDownloading
+                    ? null
+                    : () => _downloadImage(imageUrls[0]),
+            tooltip: 'Download Image',
+          ),
+        ],
       ),
       body: Container(
         decoration: BoxDecoration(
@@ -318,30 +470,20 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery> {
           ],
         ),
       ),
-      floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 16.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            FloatingActionButton(
-              heroTag: 'refresh',
-              backgroundColor: Colors.blue.shade600,
-              tooltip: 'Refresh',
-              onPressed: _loadImages,
-              child: const Icon(Icons.refresh, color: Colors.white),
-            ),
-            const SizedBox(width: 16),
-            FloatingActionButton(
-              heroTag: 'download',
-              backgroundColor: Colors.green,
-              tooltip: 'Download Image',
-              onPressed:
-                  imageUrls.isEmpty || isDownloading
-                      ? null
-                      : () => _downloadImage(imageUrls[0]),
-              child: const Icon(Icons.download, color: Colors.white),
-            ),
-          ],
+      // Keep camera button at bottom center but make it bigger
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: SizedBox(
+        height: 70.0, // Bigger button
+        width: 70.0, // Bigger button
+        child: FittedBox(
+          child: FloatingActionButton(
+            heroTag: 'camera',
+            backgroundColor: Colors.purple,
+            tooltip: 'Take Photo with Robot',
+            onPressed:
+                widget.webSocketService != null ? _sendCameraCommand : null,
+            child: const Icon(Icons.camera_alt, color: Colors.white),
+          ),
         ),
       ),
     );
@@ -349,8 +491,32 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery> {
 
   Widget _buildContent() {
     if (isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(color: Colors.white),
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Use a more engaging spinner with custom color and size
+            SizedBox(
+              width: 60,
+              height: 60,
+              child: CircularProgressIndicator(
+                color: Colors.white,
+                strokeWidth: 4,
+                backgroundColor: Colors.deepOrange.withAlpha(76),
+              ),
+            ),
+            const SizedBox(height: 24),
+            // Add loading text
+            const Text(
+              'Loading image...',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
       );
     }
 
@@ -567,6 +733,14 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery> {
                 iconTheme: const IconThemeData(color: Colors.white),
                 elevation: 0,
                 actions: [
+                  // Add share button in full image view
+                  IconButton(
+                    icon: const Icon(Icons.share, color: Colors.white),
+                    onPressed: () {
+                      Navigator.pop(context); // Close the full image view
+                      _shareImage(imageUrl); // Share the image
+                    },
+                  ),
                   // Add download button in full image view
                   IconButton(
                     icon: const Icon(Icons.download, color: Colors.white),
