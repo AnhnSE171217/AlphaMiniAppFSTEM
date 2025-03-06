@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'home_screen.dart';
 import 'websocket_service.dart'; // Import WebSocketService
+import 'package:flutter_localizations/flutter_localizations.dart'; // Import localization packages
 
 // import 'package:webview_flutter/webview_flutter.dart';
 void main() {
@@ -31,6 +32,15 @@ class MyApp extends StatelessWidget {
       home: HomeScreen(
         webSocketService: webSocketService,
       ), // Truyền WebSocketService vào HomeScreen
+      supportedLocales: const [
+        Locale('en', 'US'), // English
+        Locale('vi', 'VN'), // Vietnamese
+      ],
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
     );
   }
 }
