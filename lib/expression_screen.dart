@@ -1,7 +1,6 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
-import 'WebSocketService.dart';
+import 'websocket_service.dart';
 
 class ExpressionScreen extends StatefulWidget {
   final WebSocketService webSocketService;
@@ -9,7 +8,7 @@ class ExpressionScreen extends StatefulWidget {
   const ExpressionScreen({super.key, required this.webSocketService});
 
   @override
-  _ExpressionScreenState createState() => _ExpressionScreenState();
+  State<ExpressionScreen> createState() => _ExpressionScreenState();
 }
 
 class _ExpressionScreenState extends State<ExpressionScreen>
@@ -103,7 +102,7 @@ class _ExpressionScreenState extends State<ExpressionScreen>
         leading: Container(
           margin: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.3),
+            color: Colors.white.withAlpha(76), // was withOpacity(0.3)
             borderRadius: BorderRadius.circular(12),
           ),
           child: IconButton(
@@ -128,7 +127,7 @@ class _ExpressionScreenState extends State<ExpressionScreen>
                 margin: const EdgeInsets.fromLTRB(16, 16, 16, 16),
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.8),
+                  color: Colors.black.withAlpha(204), // was withOpacity(0.8)
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
@@ -194,8 +193,12 @@ class _ExpressionScreenState extends State<ExpressionScreen>
                                 BoxShadow(
                                   color:
                                       isSelected
-                                          ? Colors.purple.withOpacity(0.5)
-                                          : Colors.black.withOpacity(0.1),
+                                          ? Colors.purple.withAlpha(
+                                            128,
+                                          ) // was withOpacity(0.5)
+                                          : Colors.black.withAlpha(
+                                            26,
+                                          ), // was withOpacity(0.1)
                                   blurRadius: isSelected ? 12 : 6,
                                   spreadRadius: isSelected ? 2 : 0,
                                   offset: const Offset(0, 3),
@@ -226,7 +229,9 @@ class _ExpressionScreenState extends State<ExpressionScreen>
                                     ),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Colors.purple.withOpacity(0.4),
+                                        color: Colors.purple.withAlpha(
+                                          102,
+                                        ), // was withOpacity(0.4)
                                         blurRadius: 6,
                                         offset: const Offset(0, 3),
                                       ),

@@ -8,7 +8,7 @@ class TestCameraScreen extends StatefulWidget {
   const TestCameraScreen({super.key});
 
   @override
-  _TestCameraScreenState createState() => _TestCameraScreenState();
+  State<TestCameraScreen> createState() => _TestCameraScreenState();
 }
 
 class _TestCameraScreenState extends State<TestCameraScreen> {

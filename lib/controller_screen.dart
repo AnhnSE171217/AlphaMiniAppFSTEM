@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:logger/logger.dart';
-import 'WebSocketService.dart';
+import 'websocket_service.dart';
 
 class ControllerScreen extends StatefulWidget {
   final WebSocketService webSocketService;
@@ -10,7 +10,7 @@ class ControllerScreen extends StatefulWidget {
   const ControllerScreen({super.key, required this.webSocketService});
 
   @override
-  _ControllerScreenState createState() => _ControllerScreenState();
+  State<ControllerScreen> createState() => _ControllerScreenState();
 }
 
 class _ControllerScreenState extends State<ControllerScreen>

@@ -1,7 +1,6 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
-import 'WebSocketService.dart';
+import 'websocket_service.dart';
 
 class ActionScreen extends StatefulWidget {
   final WebSocketService webSocketService;
@@ -9,7 +8,7 @@ class ActionScreen extends StatefulWidget {
   const ActionScreen({super.key, required this.webSocketService});
 
   @override
-  _ActionScreenState createState() => _ActionScreenState();
+  State<ActionScreen> createState() => _ActionScreenState();
 }
 
 class _ActionScreenState extends State<ActionScreen>
@@ -102,7 +101,7 @@ class _ActionScreenState extends State<ActionScreen>
         leading: Container(
           margin: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.3),
+            color: Colors.white.withAlpha(76), // was withOpacity(0.3)
             borderRadius: BorderRadius.circular(12),
           ),
           child: IconButton(
@@ -127,7 +126,7 @@ class _ActionScreenState extends State<ActionScreen>
                 margin: const EdgeInsets.fromLTRB(16, 16, 16, 16),
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.8),
+                  color: Colors.black.withAlpha(204), // was withOpacity(0.8)
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
@@ -189,8 +188,12 @@ class _ActionScreenState extends State<ActionScreen>
                                 BoxShadow(
                                   color:
                                       isSelected
-                                          ? Colors.orange.withOpacity(0.5)
-                                          : Colors.black.withOpacity(0.1),
+                                          ? Colors.orange.withAlpha(
+                                            128,
+                                          ) // was withOpacity(0.5)
+                                          : Colors.black.withAlpha(
+                                            26,
+                                          ), // was withOpacity(0.1)
                                   blurRadius: isSelected ? 12 : 6,
                                   spreadRadius: isSelected ? 2 : 0,
                                   offset: const Offset(0, 3),
@@ -221,7 +224,9 @@ class _ActionScreenState extends State<ActionScreen>
                                     ),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Colors.orange.withOpacity(0.4),
+                                        color: Colors.orange.withAlpha(
+                                          102,
+                                        ), // was withOpacity(0.4)
                                         blurRadius: 6,
                                         offset: const Offset(0, 3),
                                       ),

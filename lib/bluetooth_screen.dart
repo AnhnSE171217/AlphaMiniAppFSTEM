@@ -11,7 +11,7 @@ class BluetoothConnectionPage extends StatefulWidget {
   const BluetoothConnectionPage({super.key});
 
   @override
-  _BluetoothConnectionPageState createState() =>
+  State<BluetoothConnectionPage> createState() =>
       _BluetoothConnectionPageState();
 }
 
@@ -132,7 +132,7 @@ class _BluetoothConnectionPageState extends State<BluetoothConnectionPage>
     try {
       logger.i("Checking Bluetooth status");
       // Check if Bluetooth is available on the device
-      bool isAvailable = await FlutterBluePlus.isAvailable;
+      bool isAvailable = await FlutterBluePlus.isSupported;
       if (!isAvailable) {
         logger.w("Bluetooth is not available on this device");
         setState(() {
@@ -142,7 +142,8 @@ class _BluetoothConnectionPageState extends State<BluetoothConnectionPage>
       }
 
       // Check if Bluetooth is turned on
-      bool isOn = await FlutterBluePlus.isOn;
+      bool isOn =
+          await FlutterBluePlus.adapterState.first == BluetoothAdapterState.on;
       logger.i("Bluetooth is turned on: $isOn");
 
       setState(() {
@@ -179,6 +180,7 @@ class _BluetoothConnectionPageState extends State<BluetoothConnectionPage>
         _isBluetoothEnabled = false;
       });
       if (mounted) {
+        // Add this check
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Lỗi khi kiểm tra trạng thái Bluetooth: $e')),
         );
@@ -190,6 +192,7 @@ class _BluetoothConnectionPageState extends State<BluetoothConnectionPage>
     if (!_hasPermissions) {
       logger.w("Attempting to scan without permissions");
       if (mounted) {
+        // Add this check
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Vui lòng cấp quyền để sử dụng Bluetooth'),
@@ -203,6 +206,7 @@ class _BluetoothConnectionPageState extends State<BluetoothConnectionPage>
     if (!_isBluetoothEnabled) {
       logger.w("Attempting to scan with Bluetooth disabled");
       if (mounted) {
+        // Add this check
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Vui lòng bật Bluetooth để quét thiết bị'),
@@ -256,6 +260,7 @@ class _BluetoothConnectionPageState extends State<BluetoothConnectionPage>
             _isScanning = false;
           });
           if (mounted) {
+            // Add this check
             ScaffoldMessenger.of(
               context,
             ).showSnackBar(SnackBar(content: Text('Lỗi khi quét: $error')));
@@ -282,6 +287,7 @@ class _BluetoothConnectionPageState extends State<BluetoothConnectionPage>
         _isScanning = false;
       });
       if (mounted) {
+        // Add this check
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text('Lỗi bắt đầu quét: $e')));
@@ -332,14 +338,18 @@ class _BluetoothConnectionPageState extends State<BluetoothConnectionPage>
     try {
       logger.i("Attempting to turn on Bluetooth");
       // On Android, we can try to prompt the user to enable Bluetooth
-      if (!await FlutterBluePlus.isOn) {
+      if (await FlutterBluePlus.adapterState.first !=
+          BluetoothAdapterState.on) {
         await FlutterBluePlus.turnOn();
       }
     } catch (e) {
       logger.e("Error turning on Bluetooth: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Vui lòng bật Bluetooth từ cài đặt: $e')),
-      );
+      if (mounted) {
+        // Add this check
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Vui lòng bật Bluetooth từ cài đặt: $e')),
+        );
+      }
     }
   }
 
@@ -404,7 +414,7 @@ class _BluetoothConnectionPageState extends State<BluetoothConnectionPage>
                           color:
                               _isBluetoothEnabled
                                   ? Colors.white
-                                  : Colors.white.withOpacity(0.5),
+                                  : Colors.white.withAlpha(128),
                         ),
                         const SizedBox(width: 8),
                         Text(
@@ -415,7 +425,7 @@ class _BluetoothConnectionPageState extends State<BluetoothConnectionPage>
                             color:
                                 _isBluetoothEnabled
                                     ? Colors.white
-                                    : Colors.white.withOpacity(0.5),
+                                    : Colors.white.withAlpha(128),
                           ),
                         ),
                       ],
@@ -468,9 +478,9 @@ class _BluetoothConnectionPageState extends State<BluetoothConnectionPage>
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.red.withOpacity(0.2),
+                      color: Colors.red.withAlpha(51),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.red.withOpacity(0.3)),
+                      border: Border.all(color: Colors.red.withAlpha(77)),
                     ),
                     child: Row(
                       children: [
@@ -494,7 +504,7 @@ class _BluetoothConnectionPageState extends State<BluetoothConnectionPage>
                               Text(
                                 'Ứng dụng cần quyền Bluetooth và Vị trí để hoạt động',
                                 style: TextStyle(
-                                  color: Colors.white.withOpacity(0.8),
+                                  color: Colors.white.withAlpha(204),
                                   fontSize: 12,
                                 ),
                               ),
@@ -533,7 +543,7 @@ class _BluetoothConnectionPageState extends State<BluetoothConnectionPage>
                               Text(
                                 'Đã tìm thấy: ${_scanResults.length} thiết bị',
                                 style: TextStyle(
-                                  color: Colors.white.withOpacity(0.7),
+                                  color: Colors.white.withAlpha(179),
                                   fontSize: 14,
                                 ),
                               ),
@@ -547,7 +557,7 @@ class _BluetoothConnectionPageState extends State<BluetoothConnectionPage>
                                 Icon(
                                   Icons.bluetooth_searching,
                                   size: 64,
-                                  color: Colors.white.withOpacity(0.5),
+                                  color: Colors.white.withAlpha(128),
                                 ),
                                 const SizedBox(height: 16),
                                 Text(
@@ -555,7 +565,7 @@ class _BluetoothConnectionPageState extends State<BluetoothConnectionPage>
                                       ? 'Không tìm thấy thiết bị nào. Vui lòng quét lại.'
                                       : 'Vui lòng bật Bluetooth để quét thiết bị.',
                                   style: TextStyle(
-                                    color: Colors.white.withOpacity(0.8),
+                                    color: Colors.white.withAlpha(204),
                                     fontSize: 16,
                                   ),
                                   textAlign: TextAlign.center,
@@ -602,10 +612,10 @@ class _BluetoothConnectionPageState extends State<BluetoothConnectionPage>
                               return Container(
                                 margin: const EdgeInsets.only(bottom: 12),
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.15),
+                                  color: Colors.white.withAlpha(38),
                                   borderRadius: BorderRadius.circular(12),
                                   border: Border.all(
-                                    color: Colors.white.withOpacity(0.2),
+                                    color: Colors.white.withAlpha(51),
                                     width: 1,
                                   ),
                                 ),
@@ -618,7 +628,7 @@ class _BluetoothConnectionPageState extends State<BluetoothConnectionPage>
                                     width: 48,
                                     height: 48,
                                     decoration: BoxDecoration(
-                                      color: Colors.white.withOpacity(0.1),
+                                      color: Colors.white.withAlpha(26),
                                       shape: BoxShape.circle,
                                     ),
                                     child: const Icon(
@@ -640,13 +650,13 @@ class _BluetoothConnectionPageState extends State<BluetoothConnectionPage>
                                       Text(
                                         'Tín hiệu: $rssi dBm',
                                         style: TextStyle(
-                                          color: Colors.white.withOpacity(0.7),
+                                          color: Colors.white.withAlpha(179),
                                         ),
                                       ),
                                       Text(
                                         'MAC: ${device.remoteId}',
                                         style: TextStyle(
-                                          color: Colors.white.withOpacity(0.7),
+                                          color: Colors.white.withAlpha(179),
                                         ),
                                       ),
                                     ],
@@ -683,7 +693,7 @@ class CredentialsInputScreen extends StatefulWidget {
   const CredentialsInputScreen({super.key, required this.device});
 
   @override
-  _CredentialsInputScreenState createState() => _CredentialsInputScreenState();
+  State<CredentialsInputScreen> createState() => _CredentialsInputScreenState();
 }
 
 class _CredentialsInputScreenState extends State<CredentialsInputScreen> {
@@ -785,7 +795,7 @@ class _CredentialsInputScreenState extends State<CredentialsInputScreen> {
           logger.i("Device was already connected");
           connected = true;
         } else {
-          throw e;
+          rethrow;
         }
       }
 
@@ -873,16 +883,22 @@ class _CredentialsInputScreenState extends State<CredentialsInputScreen> {
 
   Future<void> _sendCredentials() async {
     if (!_isConnected) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Không có kết nối với thiết bị.')),
-      );
+      if (mounted) {
+        // Add this check
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Không có kết nối với thiết bị.')),
+        );
+      }
       return;
     }
 
     if (_usernameController.text.isEmpty || _passwordController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Vui lòng nhập tài khoản và mật khẩu')),
-      );
+      if (mounted) {
+        // Add this check
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Vui lòng nhập tài khoản và mật khẩu')),
+        );
+      }
       return;
     }
 
@@ -936,9 +952,12 @@ class _CredentialsInputScreenState extends State<CredentialsInputScreen> {
         _connectionStatus = "Lỗi gửi dữ liệu: $e";
       });
 
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Lỗi: $e')));
+      if (mounted) {
+        // Add this check
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Lỗi: $e')));
+      }
     }
   }
 

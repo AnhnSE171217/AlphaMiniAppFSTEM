@@ -1,8 +1,8 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutterdemo0/WebSocketService.dart';
+import 'package:flutterdemo0/websocket_service.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
+import 'package:logger/logger.dart'; // Import logger
 
 class SpeechToTextScreen extends StatefulWidget {
   final WebSocketService webSocketService;
@@ -15,6 +15,7 @@ class SpeechToTextScreen extends StatefulWidget {
 
 class _SpeechToTextScreenState extends State<SpeechToTextScreen> {
   final SpeechToText _speechToText = SpeechToText();
+  final Logger _logger = Logger(); // Create logger instance
 
   String _recognizedText = "";
   double _confidenceLevel = 0;
@@ -30,8 +31,14 @@ class _SpeechToTextScreenState extends State<SpeechToTextScreen> {
 
   void initSpeech() async {
     _speechEnabled = await _speechToText.initialize(
-      onError: (error) => print('Speech recognition error: $error'),
-      onStatus: (status) => print('Speech recognition status: $status'),
+      onError:
+          (error) => _logger.e(
+            'Speech recognition error: $error',
+          ), // Use logger.e for errors
+      onStatus:
+          (status) => _logger.i(
+            'Speech recognition status: $status',
+          ), // Use logger.i for info
     );
 
     if (_speechEnabled) {
@@ -55,11 +62,13 @@ class _SpeechToTextScreenState extends State<SpeechToTextScreen> {
     await _speechToText.listen(
       onResult: _onSpeechResult,
       localeId: _selectedLocaleId,
-      // Remove time limits so it doesn't auto-stop
+      listenOptions: SpeechListenOptions(
+        onDevice: false,
+        cancelOnError: false, // Don't stop on errors
+        partialResults: true,
+      ),
       listenFor: const Duration(minutes: 30), // Long duration
       pauseFor: const Duration(minutes: 5), // Long pause allowed
-      cancelOnError: false, // Don't stop on errors
-      partialResults: true, // Show partial results
     );
     setState(() {
       _confidenceLevel = 0;
@@ -387,7 +396,9 @@ class _SpeechToTextScreenState extends State<SpeechToTextScreen> {
                               color: (_speechToText.isListening
                                       ? Colors.red
                                       : Colors.green)
-                                  .withOpacity(0.3),
+                                  .withAlpha(
+                                    76,
+                                  ), // Changed from withOpacity(0.3)
                               blurRadius: 10,
                               offset: const Offset(0, 4),
                             ),
@@ -431,7 +442,9 @@ class _SpeechToTextScreenState extends State<SpeechToTextScreen> {
                               shape: BoxShape.circle,
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.blue.withOpacity(0.3),
+                                  color: Colors.blue.withAlpha(
+                                    76,
+                                  ), // Changed from withOpacity(0.3)
                                   blurRadius: 10,
                                   offset: const Offset(0, 4),
                                 ),

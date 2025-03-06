@@ -10,7 +10,7 @@ import 'testcamera_screen.dart';
 import 'dance_screen.dart';
 import 'controller_screen.dart';
 import 'expression_screen.dart';
-import 'WebSocketService.dart';
+import 'websocket_service.dart';
 import 'firebase_image_gallery.dart';
 
 // Add this custom page route class for custom animations
@@ -409,20 +409,5 @@ class _HomeScreenState extends State<HomeScreen> {
       color: color,
       onTap: onTap,
     );
-  }
-
-  // Helper method to get an appropriate text color
-  Color _getTextColor(Color baseColor) {
-    if (baseColor == Colors.orange) return Colors.orange[800] ?? Colors.orange;
-    if (baseColor == Colors.pink) return Colors.pink[800] ?? Colors.pink;
-    if (baseColor == Colors.blue) return Colors.blue[800] ?? Colors.blue;
-    if (baseColor == Colors.purple) return Colors.purple[800] ?? Colors.purple;
-    if (baseColor == const Color.fromARGB(255, 30, 195, 179)) {
-      return Colors.teal[800] ?? Colors.teal;
-    }
-    if (baseColor == Colors.green) return Colors.green[800] ?? Colors.green;
-    if (baseColor == Colors.indigo) return Colors.indigo[800] ?? Colors.indigo;
-    if (baseColor == Colors.red) return Colors.red[800] ?? Colors.red;
-    return Colors.black;
   }
 }

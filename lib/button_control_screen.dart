@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'WebSocketService.dart';
+import 'websocket_service.dart';
 
 class ButtonControlScreen extends StatefulWidget {
   final WebSocketService webSocketService;
@@ -69,7 +69,9 @@ class _ButtonControlScreenState extends State<ButtonControlScreen> {
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
+                      color: Colors.black.withAlpha(
+                        26,
+                      ), // Changed from withOpacity(0.1)
                       blurRadius: 10,
                       offset: const Offset(0, 5),
                     ),
@@ -172,14 +174,17 @@ class _ButtonControlScreenState extends State<ButtonControlScreen> {
           padding: const EdgeInsets.symmetric(vertical: 20),
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [color.withOpacity(0.8), color],
+              colors: [
+                color.withAlpha(204),
+                color,
+              ], // Changed from withOpacity(0.8)
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: color.withOpacity(0.4),
+                color: color.withAlpha(102), // Changed from withOpacity(0.4)
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),

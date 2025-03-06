@@ -1,7 +1,6 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
-import 'WebSocketService.dart';
+import 'websocket_service.dart';
 
 class MotorScreen extends StatefulWidget {
   final WebSocketService webSocketService;
@@ -9,7 +8,7 @@ class MotorScreen extends StatefulWidget {
   const MotorScreen({super.key, required this.webSocketService});
 
   @override
-  _MotorScreenState createState() => _MotorScreenState();
+  State<MotorScreen> createState() => _MotorScreenState();
 }
 
 class _MotorScreenState extends State<MotorScreen>

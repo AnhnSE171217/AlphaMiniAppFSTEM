@@ -115,47 +115,41 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery> {
             locationDescription = "Documents folder";
           }
 
-          if (targetDir != null) {
-            String fileName =
-                'firebase_image_${DateTime.now().millisecondsSinceEpoch}.jpg';
-            String filePath = '${targetDir.path}/$fileName';
+          // targetDir is guaranteed to be non-null here
+          String fileName =
+              'firebase_image_${DateTime.now().millisecondsSinceEpoch}.jpg';
+          String filePath = '${targetDir.path}/$fileName';
 
-            // Check if we can write to this directory
-            try {
-              File file = File(filePath);
-              await file.writeAsBytes(response.bodyBytes);
+          // Check if we can write to this directory
+          try {
+            File file = File(filePath);
+            await file.writeAsBytes(response.bodyBytes);
 
-              setState(() {
-                downloadedImagePath = filePath;
-                isDownloading = false;
-              });
-
-              // Show success message with path information
-              _showDownloadSuccessDialog(locationDescription, filePath);
-            } catch (writeError) {
-              // If writing to external storage fails, try app-specific directory
-              final appDir = await getApplicationDocumentsDirectory();
-              final appFilePath = '${appDir.path}/$fileName';
-
-              File appFile = File(appFilePath);
-              await appFile.writeAsBytes(response.bodyBytes);
-
-              setState(() {
-                downloadedImagePath = appFilePath;
-                isDownloading = false;
-              });
-
-              // Show success but indicate it's in app-specific storage
-              _showDownloadSuccessDialog(
-                "App private storage (fallback)",
-                appFilePath,
-              );
-            }
-          } else {
             setState(() {
-              errorMessage = 'Failed to access any storage directory';
+              downloadedImagePath = filePath;
               isDownloading = false;
             });
+
+            // Show success message with path information
+            _showDownloadSuccessDialog(locationDescription, filePath);
+          } catch (writeError) {
+            // If writing to external storage fails, try app-specific directory
+            final appDir = await getApplicationDocumentsDirectory();
+            final appFilePath = '${appDir.path}/$fileName';
+
+            File appFile = File(appFilePath);
+            await appFile.writeAsBytes(response.bodyBytes);
+
+            setState(() {
+              downloadedImagePath = appFilePath;
+              isDownloading = false;
+            });
+
+            // Show success but indicate it's in app-specific storage
+            _showDownloadSuccessDialog(
+              "App private storage (fallback)",
+              appFilePath,
+            );
           }
         } else {
           setState(() {
@@ -457,7 +451,9 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery> {
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
+                    color: Colors.black.withAlpha(
+                      51,
+                    ), // Changed from withOpacity(0.2)
                     blurRadius: 15,
                     offset: const Offset(0, 5),
                   ),
@@ -508,7 +504,9 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.3),
+              color: Colors.black.withAlpha(
+                76,
+              ), // Changed from withOpacity(0.3)
               borderRadius: BorderRadius.circular(20),
             ),
             child: Row(
@@ -531,7 +529,9 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.3),
+              color: Colors.black.withAlpha(
+                76,
+              ), // Changed from withOpacity(0.3)
               borderRadius: BorderRadius.circular(20),
             ),
             child: Row(
@@ -602,7 +602,9 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery> {
                             Text(
                               'Failed to load image',
                               style: TextStyle(
-                                color: Colors.white.withOpacity(0.7),
+                                color: Colors.white.withAlpha(
+                                  179,
+                                ), // Changed from withOpacity(0.7)
                               ),
                             ),
                           ],

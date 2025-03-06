@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
-import 'WebSocketService.dart';
+import 'websocket_service.dart';
 
 class DanceScreen extends StatefulWidget {
   final WebSocketService webSocketService;
@@ -8,7 +8,7 @@ class DanceScreen extends StatefulWidget {
   const DanceScreen({super.key, required this.webSocketService});
 
   @override
-  _DanceScreenState createState() => _DanceScreenState();
+  State<DanceScreen> createState() => _DanceScreenState();
 }
 
 class _DanceScreenState extends State<DanceScreen>
@@ -81,7 +81,7 @@ class _DanceScreenState extends State<DanceScreen>
         leading: Container(
           margin: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.3),
+            color: Colors.white.withAlpha(77), // Changed from withOpacity(0.3)
             borderRadius: BorderRadius.circular(12),
           ),
           child: IconButton(
@@ -172,8 +172,12 @@ class _DanceScreenState extends State<DanceScreen>
                                 BoxShadow(
                                   color:
                                       isSelected
-                                          ? Colors.pink.withOpacity(0.5)
-                                          : Colors.black.withOpacity(0.1),
+                                          ? Colors.pink.withAlpha(
+                                            128,
+                                          ) // Changed from withOpacity(0.5)
+                                          : Colors.black.withAlpha(
+                                            26,
+                                          ), // Changed from withOpacity(0.1)
                                   blurRadius: isSelected ? 12 : 6,
                                   spreadRadius: isSelected ? 2 : 0,
                                   offset: const Offset(0, 4),
@@ -206,7 +210,9 @@ class _DanceScreenState extends State<DanceScreen>
                                       ),
                                       boxShadow: [
                                         BoxShadow(
-                                          color: Colors.pink.withOpacity(0.4),
+                                          color: Colors.pink.withAlpha(
+                                            102,
+                                          ), // Changed from withOpacity(0.4)
                                           blurRadius: 8,
                                           offset: const Offset(0, 4),
                                         ),

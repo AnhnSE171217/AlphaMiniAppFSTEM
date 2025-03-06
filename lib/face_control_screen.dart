@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'WebSocketService.dart';
+import 'websocket_service.dart';
 
 class FaceControlScreen extends StatefulWidget {
   final WebSocketService webSocketService;
@@ -163,7 +163,9 @@ class _FaceControlScreenState extends State<FaceControlScreen> {
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
+                      color: Colors.black.withAlpha(
+                        26,
+                      ), // Changed from withOpacity(0.1)
                       blurRadius: 10,
                       offset: const Offset(0, 5),
                     ),
@@ -323,14 +325,17 @@ class _FaceControlScreenState extends State<FaceControlScreen> {
           padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [color.withOpacity(0.8), color],
+              colors: [
+                color.withAlpha(204),
+                color,
+              ], // Changed from withOpacity(0.8)
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: color.withOpacity(0.4),
+                color: color.withAlpha(102), // Changed from withOpacity(0.4)
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -353,9 +358,11 @@ class _FaceControlScreenState extends State<FaceControlScreen> {
                   ),
                 ],
               ),
-              const Icon(
+              Icon(
                 Icons.arrow_forward_ios,
-                color: Colors.white70,
+                color: Colors.white.withAlpha(
+                  179,
+                ), // Changed from Colors.white70
                 size: 16,
               ),
             ],
