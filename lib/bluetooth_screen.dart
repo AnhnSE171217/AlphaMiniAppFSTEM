@@ -6,6 +6,7 @@ import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:logger/logger.dart';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'websocket_service.dart';
 
 class BluetoothConnectionPage extends StatefulWidget {
   const BluetoothConnectionPage({super.key});

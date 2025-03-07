@@ -45,6 +45,7 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery>
 
   @override
   void dispose() {
+    widget.webSocketService!.sendMessage("Close");
     _refreshController.dispose();
     super.dispose();
   }
@@ -356,7 +357,7 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery>
       return;
     }
 
-    widget.webSocketService!.sendMessage("camera");
+    widget.webSocketService!.sendMessage("Capture");
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(

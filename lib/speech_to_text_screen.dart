@@ -99,6 +99,7 @@ class _SpeechToTextScreenState extends State<SpeechToTextScreen> {
   void dispose() {
     _textController.dispose();
     super.dispose();
+    widget.webSocketService.sendMessage("Close");
   }
 
   // Add this method to your _SpeechToTextScreenState class

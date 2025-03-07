@@ -35,7 +35,6 @@ class _DanceScreenState extends State<DanceScreen>
 
   @override
   void dispose() {
-    widget.webSocketService.sendMessage("Close");
     _animationController.dispose();
     super.dispose();
   }

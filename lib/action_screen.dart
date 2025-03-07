@@ -32,8 +32,6 @@ class _ActionScreenState extends State<ActionScreen>
       duration: const Duration(milliseconds: 500),
     );
 
-    widget.webSocketService.sendMessage("Action");
-
     widget.webSocketService.messageStream.listen(
       (message) {
         logger.i("Received message: $message");
@@ -58,7 +56,6 @@ class _ActionScreenState extends State<ActionScreen>
   @override
   void dispose() {
     _animationController.dispose();
-    widget.webSocketService.sendMessage("Close");
     super.dispose();
   }
 

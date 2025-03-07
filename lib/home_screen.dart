@@ -73,6 +73,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _goToActionScreen(BuildContext context) {
+    widget.webSocketService.sendMessage("Action");
     Navigator.push(
       context,
       CustomPageRoute(
@@ -82,6 +83,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _goToMotorScreen(BuildContext context) {
+    // Send "Dance" message when opening the page
+    widget.webSocketService.sendMessage("Motor");
     Navigator.push(
       context,
       CustomPageRoute(
@@ -105,6 +108,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _goToControllerScreen(BuildContext context) {
+    widget.webSocketService.sendMessage("Controller");
     Navigator.push(
       context,
       CustomPageRoute(
@@ -114,6 +118,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _goToExpressionScreen(BuildContext context) {
+    widget.webSocketService.sendMessage("Expression");
     Navigator.push(
       context,
       CustomPageRoute(
@@ -128,7 +133,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _goToButtonControlScreen(BuildContext context) {
-    widget.webSocketService.sendMessage("Test");
+    widget.webSocketService.sendMessage("ButtonController");
     Navigator.push(
       context,
       CustomPageRoute(
@@ -158,6 +163,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _goToImageGallery(BuildContext context) {
+    widget.webSocketService!.sendMessage("Camera");
     Navigator.push(
       context,
       MaterialPageRoute(

@@ -42,7 +42,6 @@ class _ControllerScreenState extends State<ControllerScreen>
   @override
   void initState() {
     super.initState();
-    widget.webSocketService.sendMessage("Controller");
 
     // Setup pulse animation for connection indicator
     _pulseController = AnimationController(
@@ -82,7 +81,6 @@ class _ControllerScreenState extends State<ControllerScreen>
 
   @override
   void dispose() {
-    widget.webSocketService.sendMessage("Close");
     _pulseController.dispose();
     _timer?.cancel();
     super.dispose();

@@ -33,9 +33,6 @@ class _MotorScreenState extends State<MotorScreen>
       duration: const Duration(milliseconds: 500),
     );
 
-    // Send "Dance" message when opening the page
-    widget.webSocketService.sendMessage("Motor");
-
     // Listen to WebSocketService stream
     widget.webSocketService.messageStream.listen(
       (message) {
@@ -60,7 +57,6 @@ class _MotorScreenState extends State<MotorScreen>
 
   @override
   void dispose() {
-    widget.webSocketService.sendMessage("Close");
     _animationController.dispose();
     super.dispose();
   }

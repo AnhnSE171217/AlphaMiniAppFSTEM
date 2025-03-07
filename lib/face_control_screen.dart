@@ -17,6 +17,7 @@ class _FaceControlScreenState extends State<FaceControlScreen> {
 
   @override
   void dispose() {
+    widget.webSocketService.sendMessage("Close");
     _nameController.dispose();
     super.dispose();
   }

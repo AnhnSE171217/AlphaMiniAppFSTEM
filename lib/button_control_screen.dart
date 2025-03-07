@@ -34,6 +34,11 @@ class _ButtonControlScreenState extends State<ButtonControlScreen> {
     });
   }
 
+  void _goBack() {
+    widget.webSocketService.sendMessage("Close");
+    Navigator.pop(context);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -46,7 +51,7 @@ class _ButtonControlScreenState extends State<ButtonControlScreen> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: _goBack,
         ),
       ),
       body: Container(

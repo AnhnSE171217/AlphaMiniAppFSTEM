@@ -25,6 +25,32 @@ class _ExpressionScreenState extends State<ExpressionScreen>
     Color(0xFF7B1FA2), // Deep purple
   ];
 
+  // List of custom names for the buttons
+  final List<String> buttonNames = [
+    "Lo âu",
+    "Yêu thương",
+    "Giật mình",
+    "Cười đểu",
+    "Nheo mắt",
+    "Vui vẻ",
+    "Thở dài",
+    "Chia xa",
+    "Xấu hổ",
+    "Khóc",
+    "Tức giận",
+    "Khó chịu",
+    "Vui nhộn",
+    "Ngủ gật",
+    "Chóng mặt",
+    "Xoay vòng",
+    "Đảo mắt",
+    "Liếc trái",
+    "Kính râm",
+    "Mắt sao",
+    "Mắt lé",
+    "Mắt vũ trụ",
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -32,8 +58,6 @@ class _ExpressionScreenState extends State<ExpressionScreen>
       vsync: this,
       duration: const Duration(milliseconds: 500),
     );
-
-    widget.webSocketService.sendMessage("Expression");
 
     widget.webSocketService.messageStream.listen(
       (message) {
@@ -59,7 +83,6 @@ class _ExpressionScreenState extends State<ExpressionScreen>
   @override
   void dispose() {
     _animationController.dispose();
-    widget.webSocketService.sendMessage("Close");
     super.dispose();
   }
 
@@ -175,7 +198,8 @@ class _ExpressionScreenState extends State<ExpressionScreen>
                           mainAxisSpacing: 12,
                           childAspectRatio: 0.75,
                         ),
-                    itemCount: 87,
+                    itemCount:
+                        22, // Update this to 22, since we now have 22 names
                     itemBuilder: (context, index) {
                       int buttonNumber = index + 1;
                       bool isSelected = selectedButtonIndex == index;
@@ -258,7 +282,7 @@ class _ExpressionScreenState extends State<ExpressionScreen>
                                     ),
                                     width: double.infinity,
                                     child: Text(
-                                      'Button $buttonNumber',
+                                      buttonNames[index], // Use the custom name here
                                       style: TextStyle(
                                         fontSize: screenWidth * 0.028,
                                         fontWeight: FontWeight.w600,
