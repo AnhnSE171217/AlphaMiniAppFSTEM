@@ -9,8 +9,7 @@ import 'websocket_service.dart';
 import 'package:share_plus/share_plus.dart';
 
 class FirebaseImageGallery extends StatefulWidget {
-  final WebSocketService?
-  webSocketService; // Make nullable for backward compatibility
+  final WebSocketService? webSocketService;
 
   const FirebaseImageGallery({super.key, this.webSocketService});
 
@@ -28,19 +27,28 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery>
   bool isDownloading = false;
   String? downloadedImagePath;
 
-  // Add a controller for the refresh button rotation animation
   late AnimationController _refreshController;
   bool _isRefreshing = false;
 
   @override
   void initState() {
     super.initState();
-    // Initialize the animation controller
     _refreshController = AnimationController(
       duration: const Duration(milliseconds: 1000),
       vsync: this,
     );
     _loadImages();
+
+    // Listen for WebSocket messages
+    if (widget.webSocketService != null) {
+      widget.webSocketService!.messageStream.listen((message) {
+        print('Received WebSocket message: $message');
+        _handleWebSocketMessage(message);
+      });
+      widget.webSocketService!.connect(
+        "ws://192.168.1.83:8001/ws", // Replace with your WebSocket URL
+      );
+    }
   }
 
   @override
@@ -50,9 +58,7 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery>
     super.dispose();
   }
 
-  // Update the loading images method with animation
   Future<void> _loadImages() async {
-    // Start the rotation animation
     setState(() {
       isLoading = true;
       errorMessage = '';
@@ -60,13 +66,10 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery>
       _isRefreshing = true;
     });
 
-    _refreshController.repeat(); // Start continuous rotation
+    _refreshController.repeat();
 
     try {
-      // Simulate network delay if loading is too fast for a good UX
       await Future.delayed(const Duration(milliseconds: 1200));
-
-      // Just use the base URL directly
       imageUrls.add(baseUrl);
 
       setState(() {
@@ -86,7 +89,26 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery>
     }
   }
 
-  // Add download functionality
+  // Handle WebSocket messages
+  void _handleWebSocketMessage(String message) {
+    if (message.contains('http')) {
+      // Assuming the WebSocket sends a Firebase link when a photo is captured
+      setState(() {
+        imageUrls.clear();
+        imageUrls.add(message); // Add the Firebase image URL
+      });
+    } else if (message == "photoCaptured") {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Photo captured successfully!')),
+      );
+      _loadImages(); // Reload images after capturing
+    } else {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Received message: $message')));
+    }
+  }
+
   Future<void> _downloadImage(String imageUrl) async {
     setState(() {
       isDownloading = true;
@@ -94,7 +116,6 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery>
     });
 
     try {
-      // Request permissions
       bool hasPermission = await _requestPermissions();
       if (!hasPermission) {
         setState(() {
@@ -104,26 +125,21 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery>
         return;
       }
 
-      // Get the image data
       final response = await http.get(Uri.parse(imageUrl));
 
       if (response.statusCode == 200) {
-        // Check if the content is an image
         String? contentType = response.headers['content-type'];
         if (contentType != null && contentType.startsWith('image/')) {
-          // Save to Downloads directory (publicly accessible)
           Directory? targetDir;
           String locationDescription = "Unknown location";
 
           if (Platform.isAndroid) {
-            // Try multiple locations for Android (especially emulators)
             final List<String> possiblePaths = [
-              '/storage/emulated/0/Download', // Standard path
-              '/storage/self/primary/Download', // Alternative path
-              '/sdcard/Download', // Legacy path
+              '/storage/emulated/0/Download',
+              '/storage/self/primary/Download',
+              '/sdcard/Download',
             ];
 
-            // Try each path
             for (String path in possiblePaths) {
               final dir = Directory(path);
               if (await dir.exists()) {
@@ -133,30 +149,24 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery>
               }
             }
 
-            // If standard Download folders don't exist/work (common in emulators)
             if (targetDir == null) {
-              // Try external storage directory
               targetDir = await getExternalStorageDirectory();
               locationDescription = "External storage";
 
-              // If that fails too, fall back to app documents directory
               if (targetDir == null) {
                 targetDir = await getApplicationDocumentsDirectory();
                 locationDescription = "App documents folder";
               }
             }
           } else {
-            // On iOS, save to the Documents directory
             targetDir = await getApplicationDocumentsDirectory();
             locationDescription = "Documents folder";
           }
 
-          // targetDir is guaranteed to be non-null here
           String fileName =
               'firebase_image_${DateTime.now().millisecondsSinceEpoch}.jpg';
           String filePath = '${targetDir.path}/$fileName';
 
-          // Check if we can write to this directory
           try {
             File file = File(filePath);
             await file.writeAsBytes(response.bodyBytes);
@@ -166,10 +176,8 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery>
               isDownloading = false;
             });
 
-            // Show success message with path information
             _showDownloadSuccessDialog(locationDescription, filePath);
           } catch (writeError) {
-            // If writing to external storage fails, try app-specific directory
             final appDir = await getApplicationDocumentsDirectory();
             final appFilePath = '${appDir.path}/$fileName';
 
@@ -181,7 +189,6 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery>
               isDownloading = false;
             });
 
-            // Show success but indicate it's in app-specific storage
             _showDownloadSuccessDialog(
               "App private storage (fallback)",
               appFilePath,
@@ -209,26 +216,22 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery>
 
   Future<void> _shareImage(String imageUrl) async {
     setState(() {
-      isDownloading = true; // Reuse the loading state for sharing
+      isDownloading = true;
       errorMessage = '';
     });
 
     try {
-      // Get the image data
       final response = await http.get(Uri.parse(imageUrl));
 
       if (response.statusCode == 200) {
-        // Save to temporary file first
         final tempDir = await getTemporaryDirectory();
         final fileName =
             'firebase_image_share_${DateTime.now().millisecondsSinceEpoch}.jpg';
         final filePath = '${tempDir.path}/$fileName';
 
-        // Write to temp file
         File file = File(filePath);
         await file.writeAsBytes(response.bodyBytes);
 
-        // Share the file
         await Share.shareXFiles([
           XFile(filePath),
         ], text: 'Check out this image from AlphaMini robot!');
@@ -252,19 +255,14 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery>
 
   Future<bool> _requestPermissions() async {
     if (Platform.isAndroid) {
-      // For Android 13 and higher
       if (await _isAndroid13OrHigher()) {
         var status = await Permission.photos.request();
         return status.isGranted;
-      }
-      // For older Android versions
-      else {
+      } else {
         var status = await Permission.storage.request();
         return status.isGranted;
       }
-    }
-    // For iOS
-    else {
+    } else {
       var status = await Permission.photos.request();
       return status.isGranted;
     }
@@ -362,22 +360,18 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery>
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Center(
-          // Center the content
           child: Text(
             '📸 Photo captured! Tap REFRESH to view it',
-            textAlign: TextAlign.center, // Center the text
+            textAlign: TextAlign.center,
             style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 16,
-              letterSpacing:
-                  0.5, // Add slight letter spacing for better readability
+              letterSpacing: 0.5,
             ),
           ),
         ),
         backgroundColor: Colors.green,
-        duration: Duration(
-          seconds: 2,
-        ), // Extended duration for better visibility
+        duration: Duration(seconds: 2),
       ),
     );
   }
@@ -392,21 +386,18 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery>
           'Image Gallery',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
-        // Change back to arrow button for leading
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.of(context).pop(),
           tooltip: 'Go back',
         ),
         actions: [
-          // Add refresh button to app bar
           IconButton(
             icon: AnimatedBuilder(
               animation: _refreshController,
               builder: (context, child) {
                 return Transform.rotate(
-                  angle:
-                      _refreshController.value * 2.0 * 3.14159, // Full rotation
+                  angle: _refreshController.value * 2.0 * 3.14159,
                   child: Icon(
                     Icons.refresh,
                     color: _isRefreshing ? Colors.amber : Colors.white,
@@ -414,11 +405,9 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery>
                 );
               },
             ),
-            onPressed:
-                _isRefreshing ? null : _loadImages, // Prevent multiple presses
+            onPressed: _isRefreshing ? null : _loadImages,
             tooltip: 'Refresh Images',
           ),
-          // Add share button to app bar FIRST (to match full image view)
           IconButton(
             icon: const Icon(Icons.share, color: Colors.white),
             onPressed:
@@ -427,7 +416,6 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery>
                     : () => _shareImage(imageUrls[0]),
             tooltip: 'Share Image',
           ),
-          // Add download button to app bar SECOND (to match full image view)
           IconButton(
             icon: const Icon(Icons.download, color: Colors.white),
             onPressed:
@@ -449,8 +437,6 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery>
         child: Stack(
           children: [
             _buildContent(),
-
-            // Download overlay
             if (isDownloading)
               Container(
                 color: Colors.black54,
@@ -471,11 +457,10 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery>
           ],
         ),
       ),
-      // Keep camera button at bottom center but make it bigger
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: SizedBox(
-        height: 70.0, // Bigger button
-        width: 70.0, // Bigger button
+        height: 70.0,
+        width: 70.0,
         child: FittedBox(
           child: FloatingActionButton(
             heroTag: 'camera',
@@ -496,7 +481,6 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Use a more engaging spinner with custom color and size
             SizedBox(
               width: 60,
               height: 60,
@@ -507,7 +491,6 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery>
               ),
             ),
             const SizedBox(height: 24),
-            // Add loading text
             const Text(
               'Loading image...',
               style: TextStyle(
@@ -587,7 +570,6 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery>
       );
     }
 
-    // Replace the grid with a centered image display
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -618,9 +600,7 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery>
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withAlpha(
-                      51,
-                    ), // Changed from withOpacity(0.2)
+                    color: Colors.black.withAlpha(51),
                     blurRadius: 15,
                     offset: const Offset(0, 5),
                   ),
@@ -671,9 +651,7 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery>
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
-              color: Colors.black.withAlpha(
-                76,
-              ), // Changed from withOpacity(0.3)
+              color: Colors.black.withAlpha(76),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Row(
@@ -696,9 +674,7 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery>
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
-              color: Colors.black.withAlpha(
-                76,
-              ), // Changed from withOpacity(0.3)
+              color: Colors.black.withAlpha(76),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Row(
@@ -734,20 +710,18 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery>
                 iconTheme: const IconThemeData(color: Colors.white),
                 elevation: 0,
                 actions: [
-                  // Add share button in full image view
                   IconButton(
                     icon: const Icon(Icons.share, color: Colors.white),
                     onPressed: () {
-                      Navigator.pop(context); // Close the full image view
-                      _shareImage(imageUrl); // Share the image
+                      Navigator.pop(context);
+                      _shareImage(imageUrl);
                     },
                   ),
-                  // Add download button in full image view
                   IconButton(
                     icon: const Icon(Icons.download, color: Colors.white),
                     onPressed: () {
-                      Navigator.pop(context); // Close the full image view
-                      _downloadImage(imageUrl); // Start download
+                      Navigator.pop(context);
+                      _downloadImage(imageUrl);
                     },
                   ),
                 ],
@@ -777,9 +751,7 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery>
                             Text(
                               'Failed to load image',
                               style: TextStyle(
-                                color: Colors.white.withAlpha(
-                                  179,
-                                ), // Changed from withOpacity(0.7)
+                                color: Colors.white.withAlpha(179),
                               ),
                             ),
                           ],
