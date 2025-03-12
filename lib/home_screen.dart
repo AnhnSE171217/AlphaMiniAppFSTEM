@@ -163,7 +163,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _goToImageGallery(BuildContext context) {
-    widget.webSocketService!.sendMessage("Camera");
+    widget.webSocketService.sendMessage("Camera");
     Navigator.push(
       context,
       MaterialPageRoute(
