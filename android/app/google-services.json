@@ -1,0 +1,49 @@
+{
+  "project_info": {
+    "project_number": "851088787303",
+    "firebase_url": "https://alphamini-a291d-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "alphamini-a291d",
+    "storage_bucket": "alphamini-a291d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:851088787303:android:9da0b466f74bd92f8b11c2",
+        "android_client_info": {
+          "package_name": "com.example.flutter_application_1"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCHko14jfDqLVtUrzoI6b4_8qR8XbBSVkU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:851088787303:android:b3757379dbd15ff98b11c2",
+        "android_client_info": {
+          "package_name": "com.ubtrobot.mini.sdkdemo"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCHko14jfDqLVtUrzoI6b4_8qR8XbBSVkU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

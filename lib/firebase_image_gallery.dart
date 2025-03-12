@@ -7,6 +7,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'websocket_service.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 class FirebaseImageGallery extends StatefulWidget {
   final WebSocketService? webSocketService;
@@ -20,7 +21,7 @@ class FirebaseImageGallery extends StatefulWidget {
 class _FirebaseImageGalleryState extends State<FirebaseImageGallery>
     with SingleTickerProviderStateMixin {
   final String baseUrl =
-      'https://storage.googleapis.com/alphamini-a291d.firebasestorage.app/Meo';
+      'https://console.firebase.google.com/u/0/project/alphamini-a291d/storage/alphamini-a291d.firebasestorage.app/files/~2Fimages';
   List<String> imageUrls = [];
   bool isLoading = true;
   String errorMessage = '';
@@ -45,9 +46,6 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery>
         print('Received WebSocket message: $message');
         _handleWebSocketMessage(message);
       });
-      widget.webSocketService!.connect(
-        "ws://192.168.1.83:8001/ws", // Replace with your WebSocket URL
-      );
     }
   }
 
@@ -69,8 +67,20 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery>
     _refreshController.repeat();
 
     try {
-      await Future.delayed(const Duration(milliseconds: 1200));
-      imageUrls.add(baseUrl);
+      // Initialize Firebase if not already done elsewhere
+      // await Firebase.initializeApp();
+
+      // Reference to the images folder
+      final storageRef = FirebaseStorage.instance.ref().child('images');
+
+      // List all items in the directory
+      final ListResult result = await storageRef.listAll();
+
+      // Get download URLs for all items
+      for (var item in result.items) {
+        String downloadUrl = await item.getDownloadURL();
+        imageUrls.add(downloadUrl);
+      }
 
       setState(() {
         isLoading = false;
@@ -570,131 +580,52 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery>
       );
     }
 
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Text(
-            'Firebase Storage Image',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-              shadows: [
-                Shadow(
-                  offset: Offset(1.0, 1.0),
-                  blurRadius: 3.0,
-                  color: Color.fromARGB(255, 0, 0, 0),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 24),
-          GestureDetector(
-            onTap: () => _showFullImage(context, imageUrls[0]),
-            child: Container(
-              width: 300,
-              height: 300,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withAlpha(51),
-                    blurRadius: 15,
-                    offset: const Offset(0, 5),
-                  ),
-                ],
-              ),
-              padding: const EdgeInsets.all(8),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: CachedNetworkImage(
-                  imageUrl: imageUrls[0],
-                  fit: BoxFit.cover,
-                  placeholder:
-                      (context, url) => Container(
-                        color: Colors.grey[300],
-                        child: const Center(child: CircularProgressIndicator()),
-                      ),
-                  errorWidget:
-                      (context, url, error) => Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.broken_image,
-                            color: Colors.red[300],
-                            size: 48,
-                          ),
-                          const SizedBox(height: 16),
-                          const Text(
-                            'Image not available',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(color: Colors.grey),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Directory URL cannot be displayed as image',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: Colors.grey[600],
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 20),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: Colors.black.withAlpha(76),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.touch_app, color: Colors.white, size: 20),
-                const SizedBox(width: 8),
-                const Text(
-                  'Tap image to view full size',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: Colors.black.withAlpha(76),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.download, color: Colors.white, size: 20),
-                const SizedBox(width: 8),
-                const Text(
-                  'Use download button to save image',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
+    return GridView.builder(
+      padding: const EdgeInsets.all(16),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: 16,
+        mainAxisSpacing: 16,
+        childAspectRatio: 1,
       ),
+      itemCount: imageUrls.length,
+      itemBuilder: (context, index) {
+        return GestureDetector(
+          onTap: () => _showFullImage(context, imageUrls[index]),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withAlpha(51),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: CachedNetworkImage(
+                imageUrl: imageUrls[index],
+                fit: BoxFit.cover,
+                placeholder:
+                    (context, url) => Center(
+                      child: CircularProgressIndicator(
+                        color: Colors.deepOrange.shade300,
+                      ),
+                    ),
+                errorWidget:
+                    (context, url, error) => Icon(
+                      Icons.broken_image,
+                      color: Colors.red[300],
+                      size: 48,
+                    ),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 

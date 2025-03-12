@@ -1,14 +1,17 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutterdemo0/firebase_options.dart';
 import 'home_screen.dart';
 import 'websocket_service.dart'; // Import WebSocketService
 import 'package:flutter_localizations/flutter_localizations.dart'; // Import localization packages
 
 // import 'package:webview_flutter/webview_flutter.dart';
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized(); // Đảm bảo binding được khởi tạo
 
   // Kiểm tra nếu đang chạy trên Android và khởi tạo WebView
 
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const MyApp());
 }
 
