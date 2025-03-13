@@ -313,12 +313,12 @@ class _HomeScreenState extends State<HomeScreen> {
                         color: Colors.purple,
                         onTap: () => _goToExpressionScreen(context),
                       ),
-                      _buildFeatureCard(
-                        title: 'Bluetooth',
-                        icon: Icons.bluetooth,
-                        color: Colors.green,
-                        onTap: () => _goToBluetoothScreen(context),
-                      ),
+                      // _buildFeatureCard(
+                      //   title: 'Bluetooth',
+                      //   icon: Icons.bluetooth,
+                      //   color: Colors.green,
+                      //   onTap: () => _goToBluetoothScreen(context),
+                      // ),
                       _buildFeatureCard(
                         title: 'Giọng nói',
                         icon: Icons.mic,

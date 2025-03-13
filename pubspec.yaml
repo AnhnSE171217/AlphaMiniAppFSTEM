@@ -84,6 +84,7 @@ flutter:
     - assets/cat2.png
     - assets/cat3.png
     - assets/cat4.png
+    - assets/AppLogo.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

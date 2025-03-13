@@ -39,6 +39,7 @@ class _ExpressionScreenState extends State<ExpressionScreen>
     "Khóc", // emo_009
     "Ngại ngùng", // emo_010
     "Khóc to", // emo_011
+    "Cay",
   ];
 
   @override
