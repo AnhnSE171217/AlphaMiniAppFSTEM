@@ -3,10 +3,6 @@ import 'package:flutterdemo0/bluetooth_screen.dart';
 import 'package:flutterdemo0/speech_to_text_screen.dart';
 import 'action_screen.dart';
 import 'animated_feature_card.dart';
-import 'button_control_screen.dart';
-import 'face_control_screen.dart';
-import 'motor_screen.dart';
-import 'testcamera_screen.dart';
 import 'dance_screen.dart';
 import 'controller_screen.dart';
 import 'expression_screen.dart';
@@ -46,7 +42,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  String connectionStatus = "Waiting for WebSocket connection...";
+  String connectionStatus = "Đang chờ kết nối...";
 
   @override
   void initState() {
@@ -54,12 +50,12 @@ class _HomeScreenState extends State<HomeScreen> {
     widget.webSocketService.messageStream.listen(
       (message) {
         setState(() {
-          connectionStatus = "WebSocket connected successfully!";
+          connectionStatus = "Kết nối thành công!";
         });
       },
       onError: (error) {
         setState(() {
-          connectionStatus = "WebSocket connection error: $error";
+          connectionStatus = "Lỗi kết nối: $error";
         });
       },
     );
@@ -67,7 +63,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _reloadConnection() {
     setState(() {
-      connectionStatus = "Reconnecting to WebSocket...";
+      connectionStatus = "Đang kết nối lại...";
     });
     widget.webSocketService.connect('ws://34.143.171.53:8001/ws');
   }
@@ -80,21 +76,6 @@ class _HomeScreenState extends State<HomeScreen> {
         page: ActionScreen(webSocketService: widget.webSocketService),
       ),
     );
-  }
-
-  void _goToMotorScreen(BuildContext context) {
-    // Send "Dance" message when opening the page
-    widget.webSocketService.sendMessage("Motor");
-    Navigator.push(
-      context,
-      CustomPageRoute(
-        page: MotorScreen(webSocketService: widget.webSocketService),
-      ),
-    );
-  }
-
-  void _goToTestCameraScreen(BuildContext context) {
-    Navigator.push(context, CustomPageRoute(page: TestCameraScreen()));
   }
 
   void _goToDanceScreen(BuildContext context) {
@@ -132,26 +113,6 @@ class _HomeScreenState extends State<HomeScreen> {
     Navigator.push(context, CustomPageRoute(page: BluetoothConnectionPage()));
   }
 
-  void _goToButtonControlScreen(BuildContext context) {
-    widget.webSocketService.sendMessage("ButtonController");
-    Navigator.push(
-      context,
-      CustomPageRoute(
-        page: ButtonControlScreen(webSocketService: widget.webSocketService),
-      ),
-    );
-  }
-
-  void _goToFaceControlScreen(BuildContext context) {
-    widget.webSocketService.sendMessage("Face");
-    Navigator.push(
-      context,
-      CustomPageRoute(
-        page: FaceControlScreen(webSocketService: widget.webSocketService),
-      ),
-    );
-  }
-
   void _goToSpeechToTextScreen(BuildContext context) {
     widget.webSocketService.sendMessage("Voice");
     Navigator.push(
@@ -172,6 +133,19 @@ class _HomeScreenState extends State<HomeScreen> {
                 FirebaseImageGallery(webSocketService: widget.webSocketService),
       ),
     );
+  }
+
+  // Helper methods to determine colors based on connection status
+  Color _getStatusBackgroundColor() {
+    if (connectionStatus.contains("Lỗi")) return Colors.red[100]!;
+    if (connectionStatus.contains("thành công")) return Colors.green[100]!;
+    return Colors.amber[100]!;
+  }
+
+  Color _getStatusBorderColor() {
+    if (connectionStatus.contains("Lỗi")) return Colors.red;
+    if (connectionStatus.contains("thành công")) return Colors.green;
+    return Colors.amber;
   }
 
   @override
@@ -224,7 +198,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     const Expanded(
                       child: Center(
                         child: Text(
-                          'Alpha Mini Robot Control',
+                          'AlphaMini FSTEM',
                           style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
@@ -269,37 +243,22 @@ class _HomeScreenState extends State<HomeScreen> {
                   horizontal: 16,
                 ),
                 decoration: BoxDecoration(
-                  color:
-                      connectionStatus.contains("error")
-                          ? Colors.red[100]
-                          : connectionStatus.contains("connected")
-                          ? Colors.green[100]
-                          : Colors.amber[100],
+                  color: _getStatusBackgroundColor(),
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color:
-                        connectionStatus.contains("error")
-                            ? Colors.red
-                            : connectionStatus.contains("connected")
-                            ? Colors.green
-                            : Colors.amber,
+                    color: _getStatusBorderColor(),
                     width: 1.5,
                   ),
                 ),
                 child: Row(
                   children: [
                     Icon(
-                      connectionStatus.contains("error")
+                      connectionStatus.contains("Lỗi")
                           ? Icons.error_outline
-                          : connectionStatus.contains("connected")
+                          : connectionStatus.contains("thành công")
                           ? Icons.check_circle_outline
                           : Icons.hourglass_empty,
-                      color:
-                          connectionStatus.contains("error")
-                              ? Colors.red
-                              : connectionStatus.contains("connected")
-                              ? Colors.green
-                              : Colors.amber,
+                      color: _getStatusBorderColor(),
                     ),
                     const SizedBox(width: 8),
                     Expanded(
@@ -308,9 +267,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         style: TextStyle(
                           fontSize: 14,
                           color:
-                              connectionStatus.contains("error")
+                              connectionStatus.contains("Lỗi")
                                   ? Colors.red[800]
-                                  : connectionStatus.contains("connected")
+                                  : connectionStatus.contains("thành công")
                                   ? Colors.green[800]
                                   : Colors.amber[800],
                         ),
@@ -331,34 +290,28 @@ class _HomeScreenState extends State<HomeScreen> {
                     mainAxisSpacing: 16,
                     children: [
                       _buildFeatureCard(
-                        title: 'Action',
+                        title: 'Hành động',
                         icon: Icons.directions_run,
                         color: Colors.orange,
                         onTap: () => _goToActionScreen(context),
                       ),
                       _buildFeatureCard(
-                        title: 'Dance',
+                        title: 'Nhảy',
                         icon: Icons.music_note,
                         color: Colors.pink,
                         onTap: () => _goToDanceScreen(context),
                       ),
                       _buildFeatureCard(
-                        title: 'Controller',
+                        title: 'Điều khiển',
                         icon: Icons.gamepad,
                         color: Colors.blue,
                         onTap: () => _goToControllerScreen(context),
                       ),
                       _buildFeatureCard(
-                        title: 'Expression',
+                        title: 'Biểu cảm',
                         icon: Icons.face,
                         color: Colors.purple,
                         onTap: () => _goToExpressionScreen(context),
-                      ),
-                      _buildFeatureCard(
-                        title: 'Motor',
-                        icon: Icons.settings,
-                        color: Colors.teal,
-                        onTap: () => _goToMotorScreen(context),
                       ),
                       _buildFeatureCard(
                         title: 'Bluetooth',
@@ -367,31 +320,13 @@ class _HomeScreenState extends State<HomeScreen> {
                         onTap: () => _goToBluetoothScreen(context),
                       ),
                       _buildFeatureCard(
-                        title: 'Test Camera',
-                        icon: Icons.photo_camera,
-                        color: Colors.indigo,
-                        onTap: () => _goToTestCameraScreen(context),
-                      ),
-                      _buildFeatureCard(
-                        title: 'Voice',
+                        title: 'Giọng nói',
                         icon: Icons.mic,
                         color: Colors.red,
                         onTap: () => _goToSpeechToTextScreen(context),
                       ),
                       _buildFeatureCard(
-                        title: 'Button Control',
-                        icon: Icons.swipe_down_alt,
-                        color: Colors.orange,
-                        onTap: () => _goToButtonControlScreen(context),
-                      ),
-                      _buildFeatureCard(
-                        title: 'Face Control',
-                        icon: Icons.face,
-                        color: Colors.pink,
-                        onTap: () => _goToFaceControlScreen(context),
-                      ),
-                      _buildFeatureCard(
-                        title: 'Image Gallery',
+                        title: 'Thư viện ảnh',
                         icon: Icons.image,
                         color: Colors.amber,
                         onTap: () => _goToImageGallery(context),

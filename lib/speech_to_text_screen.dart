@@ -126,16 +126,20 @@ class _SpeechToTextScreenState extends State<SpeechToTextScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // Keep this line to allow the screen to resize when keyboard appears
+      resizeToAvoidBottomInset: true,
       body: Container(
+        // Add back the gradient background
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Colors.red[300]!, Colors.white],
+            colors: [Colors.red.shade300, Colors.red.shade100, Colors.white],
           ),
         ),
         child: SafeArea(
           child: Column(
+            // Rest of your column content remains unchanged
             children: [
               // Custom App Bar - removed language icon
               Padding(
@@ -564,6 +568,7 @@ class _SpeechToTextScreenState extends State<SpeechToTextScreen> {
                         ),
                       ],
                     ),
+                    // Modified section for better keyboard handling
                     child: Column(
                       children: [
                         // Header with toggle button for text input
@@ -776,18 +781,28 @@ class _SpeechToTextScreenState extends State<SpeechToTextScreen> {
                               _showingTextInput
                                   ? Column(
                                     children: [
+                                      // Make TextField container flexible
                                       Expanded(
                                         child: Stack(
                                           children: [
+                                            // Enable scrolling within the TextField
                                             TextField(
                                               controller: _textController,
                                               maxLines: null,
                                               expands: true,
+                                              // Add autofocus for better keyboard handling
+                                              autofocus: true,
+                                              // Show cursor by default
+                                              showCursor: true,
                                               textAlignVertical:
                                                   TextAlignVertical.top,
-                                              // Add keyboardType to ensure full keyboard support
                                               keyboardType:
                                                   TextInputType.multiline,
+                                              // Make sure text scrolls as user types
+                                              scrollPhysics:
+                                                  const BouncingScrollPhysics(),
+                                              // Add keyboardType to ensure full keyboard support
+
                                               // Add textCapitalization for better input experience
                                               textCapitalization:
                                                   TextCapitalization.sentences,
@@ -894,39 +909,54 @@ class _SpeechToTextScreenState extends State<SpeechToTextScreen> {
                                           ],
                                         ),
                                       ),
-                                      const SizedBox(height: 16),
-                                      ElevatedButton.icon(
-                                        onPressed: () {
-                                          if (_textController.text.isNotEmpty) {
-                                            setState(() {
-                                              _recognizedText =
-                                                  _textController.text;
-                                            });
-                                            _showTopSnackBar(
-                                              'Văn bản đã được cập nhật!',
-                                              Colors.blue,
-                                            );
-                                            setState(() {
-                                              _showingTextInput = false;
-                                            });
-                                          }
-                                        },
-                                        icon: const Icon(Icons.check),
-                                        label: const Text('Xác Nhận'),
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: Colors.blue,
-                                          foregroundColor: Colors.white,
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(
-                                              12,
+                                      // Add space for the keyboard to avoid buttons being pushed off-screen
+                                      SizedBox(
+                                        height:
+                                            MediaQuery.of(
+                                                      context,
+                                                    ).viewInsets.bottom >
+                                                    0
+                                                ? 0
+                                                : 16,
+                                      ),
+                                      // Confirm button - make it conditionally visible
+                                      if (MediaQuery.of(
+                                            context,
+                                          ).viewInsets.bottom ==
+                                          0)
+                                        ElevatedButton.icon(
+                                          onPressed: () {
+                                            if (_textController
+                                                .text
+                                                .isNotEmpty) {
+                                              setState(() {
+                                                _recognizedText =
+                                                    _textController.text;
+                                              });
+                                              _showTopSnackBar(
+                                                'Văn bản đã được cập nhật!',
+                                                Colors.blue,
+                                              );
+                                              setState(() {
+                                                _showingTextInput = false;
+                                              });
+                                            }
+                                          },
+                                          icon: const Icon(Icons.check),
+                                          label: const Text('Xác Nhận'),
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.blue,
+                                            foregroundColor: Colors.white,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                            ),
+                                            padding: const EdgeInsets.symmetric(
+                                              vertical: 12,
+                                              horizontal: 24,
                                             ),
                                           ),
-                                          padding: const EdgeInsets.symmetric(
-                                            vertical: 12,
-                                            horizontal: 24,
-                                          ),
                                         ),
-                                      ),
                                     ],
                                   )
                                   : Stack(
@@ -1005,170 +1035,172 @@ class _SpeechToTextScreenState extends State<SpeechToTextScreen> {
                   ),
                 ),
 
-              // Action Buttons
-              Container(
-                margin: const EdgeInsets.only(bottom: 20),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Microphone Button
-                    GestureDetector(
-                      onTap:
-                          _speechToText.isListening
-                              ? _stopListening
-                              : _startListening,
-                      child: Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color:
-                              _speechToText.isListening
-                                  ? Colors.red
-                                  : Colors.green,
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: (_speechToText.isListening
-                                      ? Colors.red
-                                      : Colors.green)
-                                  .withAlpha(
-                                    76,
-                                  ), // Changed from withOpacity(0.3)
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Icon(
-                          _speechToText.isListening ? Icons.stop : Icons.mic,
-                          color: Colors.white,
-                          size: 32,
+              // Action Buttons - conditionally hide when keyboard is visible
+              if (MediaQuery.of(context).viewInsets.bottom == 0)
+                Container(
+                  margin: const EdgeInsets.only(bottom: 20),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Microphone Button
+                      GestureDetector(
+                        onTap:
+                            _speechToText.isListening
+                                ? _stopListening
+                                : _startListening,
+                        child: Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color:
+                                _speechToText.isListening
+                                    ? Colors.red
+                                    : Colors.green,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: (_speechToText.isListening
+                                        ? Colors.red
+                                        : Colors.green)
+                                    .withAlpha(
+                                      76,
+                                    ), // Changed from withOpacity(0.3)
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Icon(
+                            _speechToText.isListening ? Icons.stop : Icons.mic,
+                            color: Colors.white,
+                            size: 32,
+                          ),
                         ),
                       ),
-                    ),
 
-                    // Send Button
-                    if (_recognizedText.isNotEmpty &&
-                        !_speechToText.isListening)
+                      // Send Button
+                      if (_recognizedText.isNotEmpty &&
+                          !_speechToText.isListening)
+                        Padding(
+                          padding: const EdgeInsets.only(left: 16.0),
+                          child: GestureDetector(
+                            onTap: () {
+                              final message = "Text: $_recognizedText";
+                              widget.webSocketService.sendMessage(message);
+                              setState(() {
+                                _messageHistory.add(_recognizedText);
+                              });
+                              _showTopSnackBar(
+                                'Đã gửi văn bản đến robot!',
+                                Colors.green,
+                              );
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: Colors.blue,
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.blue.withAlpha(
+                                      76,
+                                    ), // Changed from withOpacity(0.3)
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: const Icon(
+                                Icons.send,
+                                color: Colors.white,
+                                size: 28,
+                              ),
+                            ),
+                          ),
+                        ),
+
+                      // History Button
                       Padding(
                         padding: const EdgeInsets.only(left: 16.0),
                         child: GestureDetector(
                           onTap: () {
-                            final message = "Text: $_recognizedText";
-                            widget.webSocketService.sendMessage(message);
                             setState(() {
-                              _messageHistory.add(_recognizedText);
+                              _showingHistory = !_showingHistory;
+                              // Trigger button animation
+                              _historyButtonScale =
+                                  1.4; // Start with larger scale
+                              Future.delayed(
+                                const Duration(milliseconds: 150),
+                                () {
+                                  setState(() {
+                                    _historyButtonScale =
+                                        1.0; // Return to normal
+                                  });
+                                },
+                              );
                             });
-                            _showTopSnackBar(
-                              'Đã gửi văn bản đến robot!',
-                              Colors.green,
-                            );
                           },
-                          child: Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: Colors.blue,
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.blue.withAlpha(
-                                    76,
-                                  ), // Changed from withOpacity(0.3)
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
+                          child: TweenAnimationBuilder(
+                            tween: Tween<double>(
+                              begin: _historyButtonScale,
+                              end: 1.0,
                             ),
-                            child: const Icon(
-                              Icons.send,
-                              color: Colors.white,
-                              size: 28,
-                            ),
-                          ),
-                        ),
-                      ),
-
-                    // History Button
-                    Padding(
-                      padding: const EdgeInsets.only(left: 16.0),
-                      child: GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            _showingHistory = !_showingHistory;
-                            // Trigger button animation
-                            _historyButtonScale =
-                                1.4; // Start with larger scale
-                            Future.delayed(
-                              const Duration(milliseconds: 150),
-                              () {
-                                setState(() {
-                                  _historyButtonScale = 1.0; // Return to normal
-                                });
-                              },
-                            );
-                          });
-                        },
-                        child: TweenAnimationBuilder(
-                          tween: Tween<double>(
-                            begin: _historyButtonScale,
-                            end: 1.0,
-                          ),
-                          duration: const Duration(milliseconds: 300),
-                          curve: Curves.elasticOut,
-                          builder: (_, double scale, Widget? child) {
-                            return Transform.scale(
-                              scale: scale,
-                              child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 300),
-                                padding: const EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  color:
-                                      _showingHistory
-                                          ? Colors.purple
-                                          : Colors.orange,
-                                  shape: BoxShape.circle,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: (_showingHistory
-                                              ? Colors.purple
-                                              : Colors.orange)
-                                          .withAlpha(76),
-                                      blurRadius: 10,
-                                      offset: const Offset(0, 4),
-                                    ),
-                                  ],
-                                ),
-                                child: AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.elasticOut,
+                            builder: (_, double scale, Widget? child) {
+                              return Transform.scale(
+                                scale: scale,
+                                child: AnimatedContainer(
                                   duration: const Duration(milliseconds: 300),
-                                  transitionBuilder: (
-                                    Widget child,
-                                    Animation<double> animation,
-                                  ) {
-                                    return RotationTransition(
-                                      turns: animation,
-                                      child: ScaleTransition(
-                                        scale: animation,
-                                        child: child,
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color:
+                                        _showingHistory
+                                            ? Colors.purple
+                                            : Colors.orange,
+                                    shape: BoxShape.circle,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: (_showingHistory
+                                                ? Colors.purple
+                                                : Colors.orange)
+                                            .withAlpha(76),
+                                        blurRadius: 10,
+                                        offset: const Offset(0, 4),
                                       ),
-                                    );
-                                  },
-                                  child: Icon(
-                                    _showingHistory
-                                        ? Icons.history_toggle_off
-                                        : Icons.history,
-                                    key: ValueKey<bool>(_showingHistory),
-                                    color: Colors.white,
-                                    size: 28,
+                                    ],
+                                  ),
+                                  child: AnimatedSwitcher(
+                                    duration: const Duration(milliseconds: 300),
+                                    transitionBuilder: (
+                                      Widget child,
+                                      Animation<double> animation,
+                                    ) {
+                                      return RotationTransition(
+                                        turns: animation,
+                                        child: ScaleTransition(
+                                          scale: animation,
+                                          child: child,
+                                        ),
+                                      );
+                                    },
+                                    child: Icon(
+                                      _showingHistory
+                                          ? Icons.history_toggle_off
+                                          : Icons.history,
+                                      key: ValueKey<bool>(_showingHistory),
+                                      color: Colors.white,
+                                      size: 28,
+                                    ),
                                   ),
                                 ),
-                              ),
-                            );
-                          },
+                              );
+                            },
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
             ],
           ),
         ),

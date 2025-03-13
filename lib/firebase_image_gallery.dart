@@ -5,9 +5,11 @@ import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:logger/logger.dart'; // Add this import
 import 'websocket_service.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'dart:async';
 
 class FirebaseImageGallery extends StatefulWidget {
   final WebSocketService? webSocketService;
@@ -20,6 +22,7 @@ class FirebaseImageGallery extends StatefulWidget {
 
 class _FirebaseImageGalleryState extends State<FirebaseImageGallery>
     with SingleTickerProviderStateMixin {
+  final Logger logger = Logger(); // Add this line
   final String baseUrl =
       'https://console.firebase.google.com/u/0/project/alphamini-a291d/storage/alphamini-a291d.firebasestorage.app/files/~2Fimages';
   List<String> imageUrls = [];
@@ -31,32 +34,54 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery>
   late AnimationController _refreshController;
   bool _isRefreshing = false;
 
+  // Add a subscription variable to track the WebSocket stream
+  StreamSubscription? _webSocketSubscription;
+  // Add a mounted check flag
+  bool _isMounted = false;
+
   @override
   void initState() {
     super.initState();
+    _isMounted = true;
     _refreshController = AnimationController(
       duration: const Duration(milliseconds: 1000),
       vsync: this,
     );
     _loadImages();
 
-    // Listen for WebSocket messages
+    // Store the subscription to properly dispose it later
     if (widget.webSocketService != null) {
-      widget.webSocketService!.messageStream.listen((message) {
-        print('Received WebSocket message: $message');
-        _handleWebSocketMessage(message);
+      _webSocketSubscription = widget.webSocketService!.messageStream.listen((
+        message,
+      ) {
+        logger.i(
+          'Received WebSocket message: $message',
+        ); // Replace print with logger.i
+        if (_isMounted) {
+          _handleWebSocketMessage(message);
+        }
       });
     }
   }
 
   @override
   void dispose() {
-    widget.webSocketService!.sendMessage("Close");
+    _isMounted = false;
+    // Cancel the WebSocket subscription
+    _webSocketSubscription?.cancel();
+
+    // Only send "Close" if webSocketService exists
+    if (widget.webSocketService != null) {
+      widget.webSocketService!.sendMessage("Close");
+    }
+
     _refreshController.dispose();
     super.dispose();
   }
 
   Future<void> _loadImages() async {
+    if (!mounted) return;
+
     setState(() {
       isLoading = true;
       errorMessage = '';
@@ -82,18 +107,22 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery>
         imageUrls.add(downloadUrl);
       }
 
-      setState(() {
-        isLoading = false;
-        _isRefreshing = false;
-      });
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+          _isRefreshing = false;
+        });
+      }
       _refreshController.stop();
       _refreshController.reset();
     } catch (e) {
-      setState(() {
-        errorMessage = 'Failed to load images: $e';
-        isLoading = false;
-        _isRefreshing = false;
-      });
+      if (mounted) {
+        setState(() {
+          errorMessage = 'Failed to load images: $e';
+          isLoading = false;
+          _isRefreshing = false;
+        });
+      }
       _refreshController.stop();
       _refreshController.reset();
     }
@@ -101,6 +130,8 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery>
 
   // Handle WebSocket messages
   void _handleWebSocketMessage(String message) {
+    if (!mounted) return;
+
     if (message.contains('http')) {
       // Assuming the WebSocket sends a Firebase link when a photo is captured
       setState(() {
@@ -108,14 +139,18 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery>
         imageUrls.add(message); // Add the Firebase image URL
       });
     } else if (message == "photoCaptured") {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Photo captured successfully!')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Photo captured successfully!')),
+        );
+      }
       _loadImages(); // Reload images after capturing
     } else {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Received message: $message')));
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Received message: $message')));
+      }
     }
   }
 

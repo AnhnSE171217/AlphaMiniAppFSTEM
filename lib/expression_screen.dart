@@ -14,9 +14,10 @@ class ExpressionScreen extends StatefulWidget {
 class _ExpressionScreenState extends State<ExpressionScreen>
     with SingleTickerProviderStateMixin {
   final Logger logger = Logger();
-  String connectionStatus = "Connecting to WebSocket...";
+  String connectionStatus = "Đang kết nối đến WebSocket...";
   int? selectedButtonIndex;
   late AnimationController _animationController;
+  late final List<int> visibleExpressionIndexes;
 
   // Using a different color scheme for Expression screen
   final List<Color> gradientColors = [
@@ -25,30 +26,19 @@ class _ExpressionScreenState extends State<ExpressionScreen>
     Color(0xFF7B1FA2), // Deep purple
   ];
 
-  // List of custom names for the buttons
+  // List of custom names for the buttons - updated to match server expressions
   final List<String> buttonNames = [
-    "Lo âu",
-    "Yêu thương",
-    "Giật mình",
-    "Cười đểu",
-    "Nheo mắt",
-    "Vui vẻ",
-    "Thở dài",
-    "Chia xa",
-    "Xấu hổ",
-    "Khóc",
-    "Tức giận",
-    "Khó chịu",
-    "Vui nhộn",
-    "Ngủ gật",
-    "Chóng mặt",
-    "Xoay vòng",
-    "Đảo mắt",
-    "Liếc trái",
-    "Kính râm",
-    "Mắt sao",
-    "Mắt lé",
-    "Mắt vũ trụ",
+    "Lo âu", // emo_001
+    "Hơi buồn ngủ", // emo_002
+    "Thích", // emo_003
+    "Sốc", // emo_004
+    "Tức giận", // emo_005
+    "Gian ác", // emo_006
+    "Cười", // emo_007
+    "Tsudere", // emo_008
+    "Khóc", // emo_009
+    "Ngại ngùng", // emo_010
+    "Khóc to", // emo_011
   ];
 
   @override
@@ -59,24 +49,32 @@ class _ExpressionScreenState extends State<ExpressionScreen>
       duration: const Duration(milliseconds: 500),
     );
 
+    // Calculate visible expressions (skipping empty ones)
+    visibleExpressionIndexes = [];
+    for (int i = 0; i < buttonNames.length; i++) {
+      if (buttonNames[i].isNotEmpty) {
+        visibleExpressionIndexes.add(i);
+      }
+    }
+
     widget.webSocketService.messageStream.listen(
       (message) {
-        logger.i("Received message: $message");
+        logger.i("Nhận tin nhắn: $message");
       },
       onError: (error) {
         setState(() {
-          connectionStatus = "Connection error: $error";
+          connectionStatus = "Lỗi kết nối: $error";
         });
       },
       onDone: () {
         setState(() {
-          connectionStatus = "Connection closed";
+          connectionStatus = "Kết nối đã đóng";
         });
       },
     );
 
     setState(() {
-      connectionStatus = "Connected successfully!";
+      connectionStatus = "Kết nối thành công!";
     });
   }
 
@@ -100,7 +98,7 @@ class _ExpressionScreenState extends State<ExpressionScreen>
     _animationController.reset();
     _animationController.forward();
 
-    logger.i("Sent expression: $buttonNumber");
+    logger.i("Đã gửi biểu cảm: $buttonNumber");
   }
 
   void _goBack() {
@@ -110,14 +108,14 @@ class _ExpressionScreenState extends State<ExpressionScreen>
 
   @override
   Widget build(BuildContext context) {
-    double screenHeight = MediaQuery.of(context).size.height;
+    // Remove unused screenHeight variable
     double screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: const Text(
-          "Expressions",
+          "Biểu cảm", // Vietnamese title
           style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.2),
         ),
         backgroundColor: Colors.transparent,
@@ -125,7 +123,7 @@ class _ExpressionScreenState extends State<ExpressionScreen>
         leading: Container(
           margin: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: Colors.white.withAlpha(76), // was withOpacity(0.3)
+            color: Colors.white.withAlpha(76),
             borderRadius: BorderRadius.circular(12),
           ),
           child: IconButton(
@@ -143,66 +141,66 @@ class _ExpressionScreenState extends State<ExpressionScreen>
           ),
         ),
         child: SafeArea(
+          bottom: true,
           child: Column(
             children: [
               // Connection Status Card
-              Container(
-                margin: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.black.withAlpha(204), // was withOpacity(0.8)
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black26,
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                height: screenHeight * 0.2,
-                width: double.infinity,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.mood, // Changed to a face icon for expressions
-                      color: Colors.purple.shade300,
-                      size: 48,
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      connectionStatus,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 0.5,
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 12,
+                    horizontal: 16,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Colors.black12,
+                        blurRadius: 10,
+                        offset: Offset(0, 4),
                       ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.mood, color: Colors.purple.shade400, size: 24),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          connectionStatus,
+                          style: TextStyle(
+                            color: Colors.purple.shade800,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
 
               // Buttons Grid
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
                   child: GridView.builder(
                     physics: const BouncingScrollPhysics(),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 4,
-                          crossAxisSpacing: 10,
-                          mainAxisSpacing: 12,
-                          childAspectRatio: 0.75,
-                        ),
-                    itemCount:
-                        22, // Update this to 22, since we now have 22 names
-                    itemBuilder: (context, index) {
-                      int buttonNumber = index + 1;
-                      bool isSelected = selectedButtonIndex == index;
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount:
+                          MediaQuery.of(context).size.width > 600 ? 5 : 4,
+                      crossAxisSpacing: 10,
+                      mainAxisSpacing: 10,
+                      childAspectRatio: 0.95, // Adjusted for vertical space
+                    ),
+                    itemCount: visibleExpressionIndexes.length,
+                    itemBuilder: (context, visibleIndex) {
+                      int actualIndex = visibleExpressionIndexes[visibleIndex];
+                      int buttonNumber =
+                          actualIndex + 1; // Keep original numbering
+                      bool isSelected = selectedButtonIndex == actualIndex;
 
                       return AnimatedScale(
                         scale: isSelected ? 0.9 : 1.0,
@@ -217,12 +215,8 @@ class _ExpressionScreenState extends State<ExpressionScreen>
                                 BoxShadow(
                                   color:
                                       isSelected
-                                          ? Colors.purple.withAlpha(
-                                            128,
-                                          ) // was withOpacity(0.5)
-                                          : Colors.black.withAlpha(
-                                            26,
-                                          ), // was withOpacity(0.1)
+                                          ? Colors.purple.withAlpha(128)
+                                          : Colors.black.withAlpha(26),
                                   blurRadius: isSelected ? 12 : 6,
                                   spreadRadius: isSelected ? 2 : 0,
                                   offset: const Offset(0, 3),
@@ -236,65 +230,85 @@ class _ExpressionScreenState extends State<ExpressionScreen>
                                       )
                                       : null,
                             ),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(4),
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    gradient: LinearGradient(
-                                      colors: [
-                                        Colors.purple.shade300,
-                                        Colors.purple.shade600,
-                                      ],
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                    ),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.purple.withAlpha(
-                                          102,
-                                        ), // was withOpacity(0.4)
-                                        blurRadius: 6,
-                                        offset: const Offset(0, 3),
+                            child: Padding(
+                              padding: const EdgeInsets.all(4.0),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Hero(
+                                    tag: "expressionButton$buttonNumber",
+                                    child: Container(
+                                      padding: const EdgeInsets.all(3),
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        gradient: LinearGradient(
+                                          colors: [
+                                            Colors.purple.shade300,
+                                            Colors.purple.shade600,
+                                          ],
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                        ),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.purple.withAlpha(90),
+                                            blurRadius: 6,
+                                            offset: const Offset(0, 3),
+                                          ),
+                                        ],
                                       ),
-                                    ],
-                                  ),
-                                  child: CircleAvatar(
-                                    radius: screenWidth * 0.06,
-                                    backgroundColor: Colors.white,
-                                    child: ClipOval(
-                                      child: Image.asset(
-                                        _getCatImage(index),
-                                        width: screenWidth * 0.1,
-                                        height: screenWidth * 0.1,
-                                        fit: BoxFit.cover,
+                                      child: CircleAvatar(
+                                        radius: screenWidth * 0.05,
+                                        backgroundColor: Colors.white,
+                                        child: ClipOval(
+                                          child: Image.asset(
+                                            _getCatImage(actualIndex),
+                                            width: screenWidth * 0.09,
+                                            height: screenWidth * 0.09,
+                                            fit: BoxFit.cover,
+                                            cacheWidth:
+                                                (screenWidth * 0.18).round(),
+                                            cacheHeight:
+                                                (screenWidth * 0.18).round(),
+                                            errorBuilder: (
+                                              context,
+                                              error,
+                                              stackTrace,
+                                            ) {
+                                              return Icon(
+                                                Icons.mood,
+                                                color: Colors.purple.shade300,
+                                                size: screenWidth * 0.06,
+                                              );
+                                            },
+                                          ),
+                                        ),
                                       ),
                                     ),
                                   ),
-                                ),
-                                const SizedBox(height: 8),
-                                Flexible(
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 4,
-                                    ),
-                                    width: double.infinity,
-                                    child: Text(
-                                      buttonNames[index], // Use the custom name here
-                                      style: TextStyle(
-                                        fontSize: screenWidth * 0.028,
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.purple.shade800,
+                                  const SizedBox(height: 6),
+                                  Flexible(
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 2,
                                       ),
-                                      overflow: TextOverflow.ellipsis,
-                                      maxLines: 1,
-                                      textAlign: TextAlign.center,
+                                      child: Text(
+                                        buttonNames[actualIndex],
+                                        style: TextStyle(
+                                          fontSize: screenWidth * 0.028,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.purple.shade800,
+                                          height: 1.1,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                        maxLines: 2,
+                                        textAlign: TextAlign.center,
+                                      ),
                                     ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
                         ),
