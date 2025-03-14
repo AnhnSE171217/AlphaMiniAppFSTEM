@@ -14,7 +14,7 @@ class DanceScreen extends StatefulWidget {
 class _DanceScreenState extends State<DanceScreen>
     with SingleTickerProviderStateMixin {
   final Logger logger = Logger();
-  String danceStatus = "Select a move to start dancing!";
+  String danceStatus = "Chọn điệu nhảy để bắt đầu!"; // Changed to Vietnamese
   late AnimationController _animationController;
   int? selectedMoveIndex;
 
@@ -40,7 +40,7 @@ class _DanceScreenState extends State<DanceScreen>
   }
 
   void _performDanceMove(int moveNumber) {
-    String message = "Move #$moveNumber activated!";
+    String message = "Điệu nhảy #$moveNumber đã được kích hoạt!"; // Vietnamese
     widget.webSocketService.sendMessage(moveNumber.toString());
 
     setState(() {
@@ -72,7 +72,7 @@ class _DanceScreenState extends State<DanceScreen>
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: const Text(
-          "Dance Moves",
+          "Điệu Nhảy", // Changed to Vietnamese
           style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.2),
         ),
         backgroundColor: Colors.transparent,
@@ -80,7 +80,7 @@ class _DanceScreenState extends State<DanceScreen>
         leading: Container(
           margin: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: Colors.white.withAlpha(77), // Changed from withOpacity(0.3)
+            color: Colors.white.withAlpha(77),
             borderRadius: BorderRadius.circular(12),
           ),
           child: IconButton(
@@ -153,7 +153,7 @@ class _DanceScreenState extends State<DanceScreen>
                           mainAxisSpacing: 12,
                           childAspectRatio: 0.85,
                         ),
-                    itemCount: 30,
+                    itemCount: 14, // Reduced from 30 to 14 dances
                     itemBuilder: (context, index) {
                       int moveNumber = index + 1;
                       bool isSelected = selectedMoveIndex == index;
@@ -171,12 +171,8 @@ class _DanceScreenState extends State<DanceScreen>
                                 BoxShadow(
                                   color:
                                       isSelected
-                                          ? Colors.pink.withAlpha(
-                                            128,
-                                          ) // Changed from withOpacity(0.5)
-                                          : Colors.black.withAlpha(
-                                            26,
-                                          ), // Changed from withOpacity(0.1)
+                                          ? Colors.pink.withAlpha(128)
+                                          : Colors.black.withAlpha(26),
                                   blurRadius: isSelected ? 12 : 6,
                                   spreadRadius: isSelected ? 2 : 0,
                                   offset: const Offset(0, 4),
@@ -209,9 +205,7 @@ class _DanceScreenState extends State<DanceScreen>
                                       ),
                                       boxShadow: [
                                         BoxShadow(
-                                          color: Colors.pink.withAlpha(
-                                            102,
-                                          ), // Changed from withOpacity(0.4)
+                                          color: Colors.pink.withAlpha(102),
                                           blurRadius: 8,
                                           offset: const Offset(0, 4),
                                         ),
@@ -233,7 +227,7 @@ class _DanceScreenState extends State<DanceScreen>
                                 ),
                                 const SizedBox(height: 10),
                                 Text(
-                                  "Move #$moveNumber",
+                                  "Điệu nhảy #$moveNumber", // Changed to Vietnamese
                                   style: TextStyle(
                                     fontSize: screenWidth * 0.035,
                                     fontWeight: FontWeight.bold,

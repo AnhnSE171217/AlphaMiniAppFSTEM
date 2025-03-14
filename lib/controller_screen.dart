@@ -16,8 +16,8 @@ class ControllerScreen extends StatefulWidget {
 class _ControllerScreenState extends State<ControllerScreen>
     with SingleTickerProviderStateMixin {
   final Logger logger = Logger();
-  String connectionStatus = "Connected to Robot";
-  String lastAction = "Ready";
+  String connectionStatus = "Đã kết nối đến Robot"; // Translated
+  String lastAction = "Sẵn sàng"; // Translated
   Timer? _timer;
   final Map<String, bool> _buttonStates = {
     "Up": false,
@@ -31,9 +31,21 @@ class _ControllerScreenState extends State<ControllerScreen>
 
   // Map display names to actual commands sent
   final Map<String, String> _actionCommands = {
-    "Stand Up": "StandUp",
-    "Sit Down": "SitDown",
-    "Squat": "squat", // Display name is capitalized, but command is lowercase
+    "Đứng Lên": "StandUp", // Translated
+    "Ngồi Xuống": "SitDown", // Translated
+    "Ngồi Xổm": "squat", // Translated
+  };
+
+  // Map for user-friendly Vietnamese messages
+  final Map<String, String> _vietnameseNames = {
+    "Up": "đi lên",
+    "Down": "đi xuống",
+    "Left": "rẽ trái",
+    "Right": "rẽ phải",
+    "StandUp": "đứng lên",
+    "SitDown": "ngồi xuống",
+    "squat": "ngồi xổm",
+    "Close": "đóng kết nối",
   };
 
   late AnimationController _pulseController;
@@ -55,27 +67,28 @@ class _ControllerScreenState extends State<ControllerScreen>
 
     widget.webSocketService.messageStream.listen(
       (message) {
-        logger.i("Received message: $message");
+        logger.i("Nhận tin nhắn: $message"); // Translated
         setState(() {
-          lastAction = "Command: $message received";
+          // Simplified message display
+          lastAction = "Đã nhận lệnh";
         });
       },
       onError: (error) {
         setState(() {
-          connectionStatus = "Connection Error";
-          lastAction = error.toString();
+          connectionStatus = "Lỗi kết nối"; // Translated
+          lastAction = "Có lỗi xảy ra"; // Simplified error message
         });
       },
       onDone: () {
         setState(() {
-          connectionStatus = "Disconnected";
-          lastAction = "Connection closed";
+          connectionStatus = "Đã ngắt kết nối"; // Translated
+          lastAction = "Kết nối đã đóng"; // Translated
         });
       },
     );
 
     setState(() {
-      connectionStatus = "Connected to Robot";
+      connectionStatus = "Đã kết nối đến Robot"; // Translated
     });
   }
 
@@ -86,10 +99,16 @@ class _ControllerScreenState extends State<ControllerScreen>
     super.dispose();
   }
 
+  // Get friendly Vietnamese name for commands
+  String _getVietnameseName(String command) {
+    return _vietnameseNames[command] ?? command;
+  }
+
   void _sendMessage(String command) {
     widget.webSocketService.sendMessage(command);
     setState(() {
-      lastAction = "Moving: $command";
+      // More user-friendly status message
+      lastAction = "Đang ${_getVietnameseName(command)}";
     });
     HapticFeedback.mediumImpact();
   }
@@ -110,7 +129,7 @@ class _ControllerScreenState extends State<ControllerScreen>
   void _onLongPressEnd(String direction) {
     setState(() {
       _buttonStates[direction] = false;
-      lastAction = "Stopped: $direction";
+      lastAction = "Đã dừng ${_getVietnameseName(direction)}"; // Translated
     });
     _timer?.cancel();
   }
@@ -157,7 +176,7 @@ class _ControllerScreenState extends State<ControllerScreen>
         leading: Container(
           margin: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: Colors.white.withAlpha(77), // 0.3 * 255 ≈ 77
+            color: Colors.white.withAlpha(77),
             borderRadius: BorderRadius.circular(12),
           ),
           child: IconButton(
@@ -169,7 +188,7 @@ class _ControllerScreenState extends State<ControllerScreen>
           ),
         ),
         title: const Text(
-          "Robot Controller",
+          "Điều Khiển Robot", // Translated
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
@@ -204,7 +223,7 @@ class _ControllerScreenState extends State<ControllerScreen>
                 child: Container(
                   margin: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.white.withAlpha(38), // 0.15 * 255 ≈ 38
+                    color: Colors.white.withAlpha(38),
                     borderRadius: BorderRadius.circular(24),
                   ),
                   child: Padding(
@@ -230,12 +249,9 @@ class _ControllerScreenState extends State<ControllerScreen>
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white.withAlpha(38), // 0.15 * 255 ≈ 38
+        color: Colors.white.withAlpha(38),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: Colors.white.withAlpha(51), // 0.2 * 255 ≈ 51
-          width: 1,
-        ),
+        border: Border.all(color: Colors.white.withAlpha(51), width: 1),
       ),
       child: Row(
         children: [
@@ -249,17 +265,21 @@ class _ControllerScreenState extends State<ControllerScreen>
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color:
-                      connectionStatus.contains("Error")
+                      connectionStatus.contains(
+                            "Lỗi",
+                          ) // Changed to look for Vietnamese error
                           ? Colors.red
                           : Colors.green,
                   boxShadow: [
                     BoxShadow(
-                      color: (connectionStatus.contains("Error")
+                      color: (connectionStatus.contains(
+                                "Lỗi",
+                              ) // Changed to look for Vietnamese error
                               ? Colors.red
                               : Colors.green)
                           .withAlpha(
                             (_pulseAnimation.value * 0.7 * 255).toInt(),
-                          ), // converting opacity to alpha
+                          ),
                       blurRadius: 10 * _pulseAnimation.value,
                       spreadRadius: 2 * _pulseAnimation.value,
                     ),
@@ -285,7 +305,7 @@ class _ControllerScreenState extends State<ControllerScreen>
                 Text(
                   lastAction,
                   style: TextStyle(
-                    color: Colors.white.withAlpha(179), // 0.7 * 255 ≈ 179
+                    color: Colors.white.withAlpha(179),
                     fontSize: 14,
                   ),
                 ),
@@ -323,19 +343,16 @@ class _ControllerScreenState extends State<ControllerScreen>
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
       decoration: BoxDecoration(
-        color: Colors.white.withAlpha(38), // 0.15 * 255 ≈ 38
+        color: Colors.white.withAlpha(38),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: Colors.white.withAlpha(51), // 0.2 * 255 ≈ 51
-          width: 1,
-        ),
+        border: Border.all(color: Colors.white.withAlpha(51), width: 1),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          _buildActionButton("Stand Up", Icons.accessibility_new),
-          _buildActionButton("Sit Down", Icons.chair),
-          _buildActionButton("Squat", Icons.fitness_center),
+          _buildActionButton("Đứng Lên", Icons.accessibility_new), // Translated
+          _buildActionButton("Ngồi Xuống", Icons.chair), // Translated
+          _buildActionButton("Ngồi Xổm", Icons.fitness_center), // Translated
         ],
       ),
     );
@@ -417,27 +434,27 @@ class _ControllerScreenState extends State<ControllerScreen>
           color:
               isPressed
                   ? Colors.white.withAlpha(77)
-                  : Colors.white.withAlpha(26), // 0.3 and 0.1 * 255
+                  : Colors.white.withAlpha(26),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color:
                 isPressed
                     ? Colors.white.withAlpha(204)
-                    : Colors.white.withAlpha(77), // 0.8 and 0.3 * 255
+                    : Colors.white.withAlpha(77),
             width: 2,
           ),
           boxShadow:
               isPressed
                   ? [
                     BoxShadow(
-                      color: Colors.black.withAlpha(26), // 0.1 * 255 ≈ 26
+                      color: Colors.black.withAlpha(26),
                       blurRadius: 5,
                       offset: const Offset(0, 2),
                     ),
                   ]
                   : [
                     BoxShadow(
-                      color: Colors.black.withAlpha(51), // 0.2 * 255 ≈ 51
+                      color: Colors.black.withAlpha(51),
                       blurRadius: 10,
                       offset: const Offset(0, 5),
                     ),
@@ -454,12 +471,9 @@ class _ControllerScreenState extends State<ControllerScreen>
       width: 80,
       height: 80,
       decoration: BoxDecoration(
-        color: Colors.white.withAlpha(13), // 0.05 * 255 ≈ 13
+        color: Colors.white.withAlpha(13),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: Colors.white.withAlpha(26), // 0.1 * 255 ≈ 26
-          width: 2,
-        ),
+        border: Border.all(color: Colors.white.withAlpha(26), width: 2),
       ),
       child: const Icon(Icons.stop, color: Colors.white54, size: 36),
     );

@@ -55,8 +55,8 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery>
         message,
       ) {
         logger.i(
-          'Received WebSocket message: $message',
-        ); // Replace print with logger.i
+          'Nhận tin nhắn: $message', // Translated
+        );
         if (_isMounted) {
           _handleWebSocketMessage(message);
         }
@@ -118,7 +118,7 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery>
     } catch (e) {
       if (mounted) {
         setState(() {
-          errorMessage = 'Failed to load images: $e';
+          errorMessage = 'Không thể tải ảnh: $e'; // Translated
           isLoading = false;
           _isRefreshing = false;
         });
@@ -141,16 +141,16 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery>
     } else if (message == "photoCaptured") {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Photo captured successfully!')),
-        );
+          SnackBar(
+            content: const Text(
+              'Đã yêu cầu chụp ảnh thành công! Đang xử lý...',
+            ),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 3),
+          ),
+        ); // Translated
       }
       _loadImages(); // Reload images after capturing
-    } else {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Received message: $message')));
-      }
     }
   }
 
@@ -164,7 +164,8 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery>
       bool hasPermission = await _requestPermissions();
       if (!hasPermission) {
         setState(() {
-          errorMessage = 'Storage permission is required to save images';
+          errorMessage =
+              'Cần quyền truy cập bộ nhớ để lưu ảnh. Vui lòng cấp quyền trong cài đặt ứng dụng.'; // Translated
           isDownloading = false;
         });
         return;
@@ -176,7 +177,7 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery>
         String? contentType = response.headers['content-type'];
         if (contentType != null && contentType.startsWith('image/')) {
           Directory? targetDir;
-          String locationDescription = "Unknown location";
+          String locationDescription = "Vị trí không xác định"; // Translated
 
           if (Platform.isAndroid) {
             final List<String> possiblePaths = [
@@ -189,23 +190,23 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery>
               final dir = Directory(path);
               if (await dir.exists()) {
                 targetDir = dir;
-                locationDescription = "Downloads folder";
+                locationDescription = "Thư mục Tải xuống"; // Translated
                 break;
               }
             }
 
             if (targetDir == null) {
               targetDir = await getExternalStorageDirectory();
-              locationDescription = "External storage";
+              locationDescription = "Bộ nhớ ngoài"; // Translated
 
               if (targetDir == null) {
                 targetDir = await getApplicationDocumentsDirectory();
-                locationDescription = "App documents folder";
+                locationDescription = "Thư mục tài liệu ứng dụng"; // Translated
               }
             }
           } else {
             targetDir = await getApplicationDocumentsDirectory();
-            locationDescription = "Documents folder";
+            locationDescription = "Thư mục Tài liệu"; // Translated
           }
 
           String fileName =
@@ -235,25 +236,27 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery>
             });
 
             _showDownloadSuccessDialog(
-              "App private storage (fallback)",
+              "Bộ nhớ riêng của ứng dụng (dự phòng)", // Translated
               appFilePath,
             );
           }
         } else {
           setState(() {
-            errorMessage = 'The URL does not point to an image file';
+            errorMessage = 'URL không trỏ tới tệp hình ảnh'; // Translated
             isDownloading = false;
           });
         }
       } else {
         setState(() {
-          errorMessage = 'Failed to download: HTTP ${response.statusCode}';
+          errorMessage =
+              'Tải xuống thất bại: HTTP ${response.statusCode}'; // Translated
           isDownloading = false;
         });
       }
     } catch (e) {
       setState(() {
-        errorMessage = 'Download error: $e';
+        errorMessage =
+            'Không thể tải xuống ảnh. Vui lòng kiểm tra kết nối mạng và thử lại.'; // Translated
         isDownloading = false;
       });
     }
@@ -279,20 +282,21 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery>
 
         await Share.shareXFiles([
           XFile(filePath),
-        ], text: 'Check out this image from AlphaMini robot!');
+        ], text: 'Xem ảnh từ robot AlphaMini!'); // Translated
 
         setState(() {
           isDownloading = false;
         });
       } else {
         setState(() {
-          errorMessage = 'Failed to share: HTTP ${response.statusCode}';
+          errorMessage =
+              'Chia sẻ thất bại: HTTP ${response.statusCode}'; // Translated
           isDownloading = false;
         });
       }
     } catch (e) {
       setState(() {
-        errorMessage = 'Share error: $e';
+        errorMessage = 'Lỗi chia sẻ: $e'; // Translated
         isDownloading = false;
       });
     }
@@ -327,23 +331,25 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery>
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Download Complete'),
+          title: const Text('Tải xuống hoàn tất'), // Translated
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('The image has been saved to your $locationDescription.'),
+              Text(
+                'Hình ảnh đã được lưu thành công vào $locationDescription.',
+              ), // Translated
               const SizedBox(height: 16),
-              const Text('File path:'),
+              const Text('Đường dẫn:'), // Translated
               Text(
                 filePath,
                 style: const TextStyle(fontSize: 12, color: Colors.grey),
               ),
               const SizedBox(height: 8),
-              if (locationDescription.contains("fallback") ||
-                  locationDescription.contains("App"))
+              if (locationDescription.contains("dự phòng") ||
+                  locationDescription.contains("ứng dụng"))
                 const Text(
-                  "Note: Image saved to app storage because system storage was unavailable. The image will be removed if the app is uninstalled.",
+                  "Lưu ý: Hình ảnh được lưu vào bộ nhớ ứng dụng vì không thể truy cập bộ nhớ hệ thống. Hình ảnh sẽ bị xóa khi gỡ cài đặt ứng dụng.", // Translated
                   style: TextStyle(fontSize: 12, color: Colors.orange),
                 ),
             ],
@@ -353,7 +359,7 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery>
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: const Text('Close'),
+              child: const Text('Đóng'), // Translated
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
@@ -363,7 +369,7 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery>
                 Navigator.of(context).pop();
                 _viewDownloadedImage();
               },
-              child: const Text('View Image'),
+              child: const Text('Xem ảnh'), // Translated
             ),
           ],
         );
@@ -383,7 +389,7 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery>
               appBar: AppBar(
                 backgroundColor: Colors.black,
                 iconTheme: const IconThemeData(color: Colors.white),
-                title: const Text('Downloaded Image'),
+                title: const Text('Ảnh đã tải xuống'), // Translated
                 elevation: 0,
               ),
               body: Center(child: Image.file(File(downloadedImagePath!))),
@@ -395,7 +401,9 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery>
   void _sendCameraCommand() {
     if (widget.webSocketService == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('WebSocket service not available')),
+        const SnackBar(
+          content: Text('Dịch vụ WebSocket không khả dụng'),
+        ), // Translated
       );
       return;
     }
@@ -406,7 +414,7 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery>
       const SnackBar(
         content: Center(
           child: Text(
-            '📸 Photo captured! Tap REFRESH to view it',
+            '📸 Đã chụp ảnh! Chạm LÀM MỚI để xem', // Translated
             textAlign: TextAlign.center,
             style: TextStyle(
               fontWeight: FontWeight.bold,
@@ -428,13 +436,13 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery>
         elevation: 0,
         backgroundColor: Colors.deepOrange,
         title: const Text(
-          'Image Gallery',
+          'Thư viện ảnh', // Translated
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.of(context).pop(),
-          tooltip: 'Go back',
+          tooltip: 'Quay lại', // Translated
         ),
         actions: [
           IconButton(
@@ -451,7 +459,7 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery>
               },
             ),
             onPressed: _isRefreshing ? null : _loadImages,
-            tooltip: 'Refresh Images',
+            tooltip: 'Làm mới', // Translated
           ),
           IconButton(
             icon: const Icon(Icons.share, color: Colors.white),
@@ -459,7 +467,7 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery>
                 imageUrls.isEmpty || isDownloading
                     ? null
                     : () => _shareImage(imageUrls[0]),
-            tooltip: 'Share Image',
+            tooltip: 'Chia sẻ', // Translated
           ),
           IconButton(
             icon: const Icon(Icons.download, color: Colors.white),
@@ -467,7 +475,7 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery>
                 imageUrls.isEmpty || isDownloading
                     ? null
                     : () => _downloadImage(imageUrls[0]),
-            tooltip: 'Download Image',
+            tooltip: 'Tải xuống', // Translated
           ),
         ],
       ),
@@ -492,7 +500,7 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery>
                       CircularProgressIndicator(color: Colors.white),
                       SizedBox(height: 16),
                       Text(
-                        'Downloading...',
+                        'Đang tải xuống...', // Translated
                         style: TextStyle(color: Colors.white),
                       ),
                     ],
@@ -510,7 +518,7 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery>
           child: FloatingActionButton(
             heroTag: 'camera',
             backgroundColor: Colors.purple,
-            tooltip: 'Take Photo with Robot',
+            tooltip: 'Yêu cầu AlphaMini chụp ảnh mới', // Translated
             onPressed:
                 widget.webSocketService != null ? _sendCameraCommand : null,
             child: const Icon(Icons.camera_alt, color: Colors.white),
@@ -537,7 +545,7 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery>
             ),
             const SizedBox(height: 24),
             const Text(
-              'Loading image...',
+              'Đang tải ảnh...', // Translated
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 18,
@@ -550,7 +558,8 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery>
     }
 
     if (errorMessage.isNotEmpty) {
-      if (errorMessage.contains('Storage permission')) {
+      if (errorMessage.contains('Cần quyền truy cập')) {
+        // Updated check for Vietnamese text
         return Center(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
@@ -567,14 +576,17 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery>
                 const SizedBox(height: 24),
                 ElevatedButton(
                   onPressed: _requestPermissions,
-                  child: const Text('Request Permission Again'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.deepOrange,
+                  ),
+                  child: const Text('Cấp quyền ngay'), // More action-oriented
                 ),
                 const SizedBox(height: 12),
                 TextButton(
                   onPressed: () {
                     openAppSettings();
                   },
-                  child: const Text('Open App Settings'),
+                  child: const Text('Mở cài đặt ứng dụng'), // Translated
                 ),
               ],
             ),
@@ -597,7 +609,7 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery>
                 const SizedBox(height: 24),
                 ElevatedButton(
                   onPressed: _loadImages,
-                  child: const Text('Try Again'),
+                  child: const Text('Thử lại'), // Translated
                 ),
               ],
             ),
@@ -607,10 +619,22 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery>
     }
 
     if (imageUrls.isEmpty) {
-      return const Center(
-        child: Text(
-          'No images found',
-          style: TextStyle(fontSize: 18, color: Colors.white),
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.photo_library_outlined, size: 60, color: Colors.white70),
+            const SizedBox(height: 16),
+            const Text(
+              'Chưa có ảnh nào',
+              style: TextStyle(fontSize: 18, color: Colors.white),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Hãy nhấn nút camera để chụp ảnh đầu tiên',
+              style: TextStyle(fontSize: 14, color: Colors.white70),
+            ),
+          ],
         ),
       );
     }
@@ -682,6 +706,7 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery>
                       Navigator.pop(context);
                       _shareImage(imageUrl);
                     },
+                    tooltip: 'Chia sẻ', // Translated
                   ),
                   IconButton(
                     icon: const Icon(Icons.download, color: Colors.white),
@@ -689,6 +714,7 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery>
                       Navigator.pop(context);
                       _downloadImage(imageUrl);
                     },
+                    tooltip: 'Tải xuống', // Translated
                   ),
                 ],
               ),
@@ -715,7 +741,7 @@ class _FirebaseImageGalleryState extends State<FirebaseImageGallery>
                             ),
                             const SizedBox(height: 16),
                             Text(
-                              'Failed to load image',
+                              'Không thể tải ảnh', // Translated
                               style: TextStyle(
                                 color: Colors.white.withAlpha(179),
                               ),

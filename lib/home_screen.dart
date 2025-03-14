@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutterdemo0/bluetooth_screen.dart';
+// import 'package:flutterdemo0/bluetooth_screen.dart';
 import 'package:flutterdemo0/speech_to_text_screen.dart';
 import 'action_screen.dart';
 import 'animated_feature_card.dart';
@@ -108,10 +108,10 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _goToBluetoothScreen(BuildContext context) {
-    widget.webSocketService.sendMessage("Bluetooth");
-    Navigator.push(context, CustomPageRoute(page: BluetoothConnectionPage()));
-  }
+  // void _goToBluetoothScreen(BuildContext context) {
+  //   widget.webSocketService.sendMessage("Bluetooth");
+  //   Navigator.push(context, CustomPageRoute(page: BluetoothConnectionPage()));
+  // }
 
   void _goToSpeechToTextScreen(BuildContext context) {
     widget.webSocketService.sendMessage("Voice");
