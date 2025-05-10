@@ -1,13 +1,29 @@
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:logger/logger.dart'; // Add this import
+import 'firebase_options.dart';
 import 'home_screen.dart';
-import 'WebSocketService.dart'; // Import WebSocketService
-import 'package:webview_flutter/webview_flutter.dart';
+import 'websocket_service.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
-void main() {
-  WidgetsFlutterBinding.ensureInitialized(); // Đảm bảo binding được khởi tạo
+// Create services globally
+final WebSocketService webSocketService = WebSocketService();
+final FirebaseAuth firebaseAuth = FirebaseAuth.instance;
+final Logger logger = Logger(); // Add logger instance
 
-  // Kiểm tra nếu đang chạy trên Android và khởi tạo WebView
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
 
+  // Initialize Firebase
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  // Connect WebSocket in background
+  Future.microtask(() {
+    webSocketService.connect('ws://34.143.171.53:8001/ws');
+  });
+
+  // Sign in anonymously for simple auth
 
   runApp(const MyApp());
 }
@@ -17,16 +33,21 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Khởi tạo WebSocketService và kết nối khi ứng dụng khởi động
-    final WebSocketService webSocketService = WebSocketService();
-    webSocketService.connect('ws://192.168.1.83:8001/ws'); // Kết nối WebSocket
-
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.blue,
+          secondary: Colors.red,
+        ),
       ),
-      home: HomeScreen(webSocketService: webSocketService),  // Truyền WebSocketService vào HomeScreen
+      home: HomeScreen(webSocketService: webSocketService),
+      supportedLocales: const [Locale('en', 'US'), Locale('vi', 'VN')],
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
     );
   }
 }
